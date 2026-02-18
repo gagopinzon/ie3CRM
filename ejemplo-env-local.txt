@@ -1,0 +1,33 @@
+# ============================================
+# EJEMPLO DE .env.local CON TUS DATOS
+# ============================================
+# Basado en tu Pre-Authenticated Request URL
+# Solo falta agregar las API Keys
+
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/ie3
+
+# NextAuth
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=tu-secret-generado-con-openssl-rand-base64-32
+
+# Oracle Cloud Storage
+# ✅ Ya configurado con los datos de tu URL:
+ORACLE_REGION=us-sanjose-1
+ORACLE_NAMESPACE=axj9sziuwe9i
+ORACLE_BUCKET_NAME=IE3
+ORACLE_ENDPOINT=https://objectstorage.us-sanjose-1.oraclecloud.com
+
+# ⚠️ FALTA: Necesitas crear API Keys en Oracle Cloud Console
+# Ve a: Identity > Users > [Tu Usuario] > API Keys > Add API Key
+ORACLE_ACCESS_KEY_ID=el-fingerprint-que-te-dio-oracle
+ORACLE_SECRET_ACCESS_KEY=el-contenido-completo-del-archivo-private-key.pem
+
+# ============================================
+# INSTRUCCIONES:
+# ============================================
+# 1. Copia este contenido a .env.local
+# 2. Genera NEXTAUTH_SECRET: openssl rand -base64 32
+# 3. Crea API Keys en Oracle Cloud Console
+# 4. Reemplaza ORACLE_ACCESS_KEY_ID y ORACLE_SECRET_ACCESS_KEY
+# 5. Configura MONGODB_URI según tu setup

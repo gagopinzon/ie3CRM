@@ -1,0 +1,52 @@
+# ============================================
+# EJEMPLO COMPLETO DE .env.local
+# ============================================
+# Basado en tu configuración de Oracle Cloud
+# Copia este contenido a .env.local y completa lo que falte
+
+# ============================================
+# MongoDB - Base de Datos
+# ============================================
+MONGODB_URI=mongodb://localhost:27017/ie3
+
+# ============================================
+# NextAuth.js - Autenticación
+# ============================================
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=genera-uno-con-openssl-rand-base64-32
+
+# ============================================
+# Oracle Cloud Storage - Almacenamiento
+# ============================================
+# ✅ Ya configurado con tus datos:
+ORACLE_REGION=us-sanjose-1
+ORACLE_NAMESPACE=axj9sziuwe9i
+ORACLE_BUCKET_NAME=IE3
+ORACLE_ENDPOINT=https://objectstorage.us-sanjose-1.oraclecloud.com
+ORACLE_ACCESS_KEY_ID=85:0f:db:b7:b0:03:77:dc:12:7d:72:a0:80:a5:6d:53
+
+# ⚠️ FALTA: Necesitas el contenido del archivo API_key_private.pem
+# Busca el archivo que descargaste cuando creaste la API Key
+# Debe tener un contenido como este:
+ORACLE_SECRET_ACCESS_KEY=-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEA1234567890abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnop
+... (todo el contenido del archivo .pem) ...
+-----END RSA PRIVATE KEY-----
+
+# ============================================
+# INSTRUCCIONES FINALES:
+# ============================================
+# 1. Genera NEXTAUTH_SECRET:
+#    openssl rand -base64 32
+#
+# 2. Encuentra el archivo API_key_private.pem:
+#    - Busca en ~/Downloads o ~/Descargas
+#    - O ejecuta: find ~ -name "*private*.pem"
+#
+# 3. Copia TODO el contenido del archivo .pem
+#    (incluyendo BEGIN y END) y pégalo como
+#    valor de ORACLE_SECRET_ACCESS_KEY
+#
+# 4. O ejecuta el script automático:
+#    ./configurar-oracle.sh
