@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
 
     // Solo admins pueden crear usuarios
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || !(session.user as any).permissions?.canManageUsers) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 

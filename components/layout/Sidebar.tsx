@@ -16,6 +16,7 @@ import {
   FileType,
   Users,
   Shield,
+  Package,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
@@ -24,13 +25,14 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Proyectos', href: '/projects', icon: FolderKanban },
   { name: 'Clientes', href: '/clients', icon: Building2 },
+  { name: 'Inventarios', href: '/inventories', icon: Package },
   { name: 'Tipos de Documentos', href: '/document-types', icon: FileType },
   { name: 'Categorías', href: '/categories', icon: FileText },
   { name: 'Calendario', href: '/calendar', icon: Calendar },
+  { name: 'Usuarios', href: '/users', icon: Users },
 ];
 
 const adminNavigation = [
-  { name: 'Usuarios', href: '/users', icon: Users },
   { name: 'Roles', href: '/roles', icon: Shield },
 ];
 
@@ -38,7 +40,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { data: session } = useSession();
-  const isAdmin = session?.user?.role === 'admin';
+  const canManageUsers = (session?.user as any)?.permissions?.canManageUsers;
 
   return (
     <>
@@ -66,9 +68,8 @@ export default function Sidebar() {
                 alt="IE3 Logo"
                 width={32}
                 height={32}
-                className="w-8 h-8"
+                className="w-12 h-12 brightness-0 invert"
               />
-              <h1 className="text-xl font-bold">IE3</h1>
             </div>
           </div>
 
@@ -92,7 +93,7 @@ export default function Sidebar() {
               );
             })}
             
-            {isAdmin && (
+            {canManageUsers && (
               <>
                 <div className="pt-4 mt-4 border-t border-gray-800">
                   <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">

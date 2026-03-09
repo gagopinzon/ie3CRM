@@ -46,6 +46,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    if (!(session.user as any).permissions?.canManageClients) {
+      return NextResponse.json({ error: 'No tienes permiso para crear clientes' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       companyName,

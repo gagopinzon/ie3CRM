@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import ProjectDocument from '@/models/ProjectDocument';
 import { deleteFromOracle } from '@/lib/oracle-storage';
+import { recalculateProjectProgress } from '@/lib/projects';
 
 export async function DELETE(
   request: Request,
@@ -14,6 +15,10 @@ export async function DELETE(
 
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    if (!(session.user as any).permissions?.canManageDocuments) {
+      return NextResponse.json({ error: 'No tienes permiso para eliminar documentos' }, { status: 403 });
     }
 
     await connectDB();
@@ -31,8 +36,12 @@ export async function DELETE(
     // Delete from Oracle Cloud Storage
     await deleteFromOracle(fileName);
 
+    const projectId = document.projectId?.toString?.() ?? document.projectId;
+
     // Delete from database
     await ProjectDocument.findByIdAndDelete(params.id);
+
+    if (projectId) await recalculateProjectProgress(projectId);
 
     return NextResponse.json({ message: 'Documento eliminado exitosamente' }, { status: 200 });
   } catch (error: any) {

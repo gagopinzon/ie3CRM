@@ -31,14 +31,50 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Contraseña incorrecta');
         }
 
-        // Obtener el código del rol (para compatibilidad con el sistema existente)
-        const role = typeof user.role === 'object' && user.role !== null ? (user.role as any).code : 'viewer';
+        const roleObj = typeof user.role === 'object' && user.role !== null ? (user.role as any) : null;
+        const roleCode = roleObj?.code ?? 'viewer';
+        const allPermissions = {
+          canManageUsers: true,
+          canManageProjects: true,
+          canManageClients: true,
+          canManageDocuments: true,
+          canManageCategories: true,
+          canManageDocumentTypes: true,
+          canViewAllProjects: true,
+          canEditAllProjects: true,
+        };
+        const noPermissions = {
+          canManageUsers: false,
+          canManageProjects: false,
+          canManageClients: false,
+          canManageDocuments: false,
+          canManageCategories: false,
+          canManageDocumentTypes: false,
+          canViewAllProjects: false,
+          canEditAllProjects: false,
+        };
+        let permissions =
+          roleCode === 'admin'
+            ? allPermissions
+            : roleObj?.permissions
+              ? {
+                  canManageUsers: !!roleObj.permissions.canManageUsers,
+                  canManageProjects: !!roleObj.permissions.canManageProjects,
+                  canManageClients: !!roleObj.permissions.canManageClients,
+                  canManageDocuments: !!roleObj.permissions.canManageDocuments,
+                  canManageCategories: !!roleObj.permissions.canManageCategories,
+                  canManageDocumentTypes: !!roleObj.permissions.canManageDocumentTypes,
+                  canViewAllProjects: !!roleObj.permissions.canViewAllProjects,
+                  canEditAllProjects: !!roleObj.permissions.canEditAllProjects,
+                }
+              : noPermissions;
 
         return {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
-          role: role,
+          role: roleCode,
+          permissions,
         };
       },
     }),
@@ -46,8 +82,9 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = (user as any).id;
         token.role = (user as any).role;
+        token.permissions = (user as any).permissions;
       }
       return token;
     },
@@ -55,6 +92,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
+        (session.user as any).permissions = token.permissions;
       }
       return session;
     },

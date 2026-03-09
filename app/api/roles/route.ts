@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import Role from '@/models/Role';
-import User from '@/models/User';
 
 export async function GET() {
   try {
@@ -31,12 +30,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Solo admins pueden crear roles
-    const user = await User.findById((session.user as any).id).populate('role');
-    const userRole = user && typeof (user as any).role === 'object' ? (user as any).role : null;
-    
-    if (!userRole || !(userRole as any).permissions?.canManageUsers) {
-      return NextResponse.json({ error: 'No autorizado. Solo administradores pueden crear roles' }, { status: 403 });
+    if (!(session.user as any).permissions?.canManageUsers) {
+      return NextResponse.json({ error: 'No autorizado. Sin permiso para crear roles' }, { status: 403 });
     }
 
     const body = await request.json();

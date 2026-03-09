@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import ProjectTask from '@/models/ProjectTask';
-import Project from '@/models/Project';
+import { recalculateProjectProgress } from '@/lib/projects';
 
 export async function GET(
   request: Request,
@@ -20,6 +20,7 @@ export async function GET(
 
     const tasks = await ProjectTask.find({ projectId: params.id })
       .populate('createdBy', 'name email')
+      .populate('assignedTo', 'name email')
       .sort({ order: 1, createdAt: 1 });
 
     return NextResponse.json(tasks, { status: 200 });
@@ -40,7 +41,8 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { title, description, status } = body;
+    const { title, description, status, documentTypeId, assignedTo, dueDate } = body;
+    const assignedIds = Array.isArray(assignedTo) ? assignedTo : assignedTo ? [assignedTo] : [];
 
     if (!title || !title.trim()) {
       return NextResponse.json(
@@ -61,34 +63,24 @@ export async function POST(
 
     const task = await ProjectTask.create({
       projectId: params.id,
+      ...(documentTypeId && { documentTypeId }),
       title: title.trim(),
       description: description?.trim(),
       status: status || 'todo',
       order: nextOrder,
+      ...(assignedIds.length >= 0 && { assignedTo: assignedIds }),
+      ...(dueDate && { dueDate: new Date(dueDate) }),
       createdBy: session.user?.id,
     });
 
     const populatedTask = await ProjectTask.findById(task._id)
-      .populate('createdBy', 'name email');
+      .populate('createdBy', 'name email')
+      .populate('assignedTo', 'name email');
 
-    // Actualizar progreso del proyecto
-    await updateProjectProgress(params.id);
+    await recalculateProjectProgress(params.id);
 
     return NextResponse.json(populatedTask, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-}
-
-async function updateProjectProgress(projectId: string) {
-  const tasks = await ProjectTask.find({ projectId });
-  if (tasks.length === 0) {
-    await Project.findByIdAndUpdate(projectId, { progress: 0 });
-    return;
-  }
-
-  const doneTasks = tasks.filter((task) => task.status === 'done').length;
-  const progress = Math.round((doneTasks / tasks.length) * 100);
-
-  await Project.findByIdAndUpdate(projectId, { progress });
 }

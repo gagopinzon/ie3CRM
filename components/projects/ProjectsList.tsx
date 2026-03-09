@@ -90,9 +90,6 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Progreso
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Documentos
-              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
@@ -101,10 +98,14 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
           <tbody className="bg-white divide-y divide-gray-200">
             {projects.map((project) => (
               <tr key={project._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{project.name}</div>
-                  <div className="text-sm text-gray-500 truncate max-w-xs">
-                    {project.description}
+                <td className="px-6 py-5">
+                  <div className="max-w-[34rem]">
+                    <div className="text-2xl md:text-3xl font-extrabold leading-tight tracking-tight text-gray-900 break-words">
+                      {project.name}
+                    </div>
+                    <div className="mt-1 text-sm text-gray-500 truncate max-w-xs">
+                      {project.description}
+                    </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -131,9 +132,6 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
                   <span className="text-xs text-gray-500 mt-1 block">
                     {project.progress || 0}%
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {project.documentTypes?.length || 0} tipos
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">

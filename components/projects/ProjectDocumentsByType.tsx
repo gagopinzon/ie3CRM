@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, FormEvent } from 'react';
 import { ProjectDocument } from '@/shared/types';
 import { Upload, Download, Trash2, FileText, Plus, X } from 'lucide-react';
 
@@ -8,6 +8,7 @@ interface DocumentType {
   _id: string;
   name: string;
   description?: string;
+  allowedFileTypes?: string[];
 }
 
 interface ProjectDocumentsByTypeProps {
@@ -100,6 +101,11 @@ export default function ProjectDocumentsByType({
     return documents.filter((doc) => (doc as any).documentTypeId?._id === typeId || (doc as any).documentTypeId === typeId);
   };
 
+  const isLocationType = (docType: DocumentType) =>
+    docType.allowedFileTypes?.includes('ubicacion') ||
+    docType.name?.toLowerCase().includes('ubicación') ||
+    docType.name?.toLowerCase().includes('ubicacion');
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -116,29 +122,36 @@ export default function ProjectDocumentsByType({
           <p className="text-gray-500">Este proyecto no tiene tipos de documentos asignados</p>
         </div>
       ) : (
-        documentTypes.map((docType) => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {documentTypes.map((docType) => {
           const typeDocuments = getDocumentsByType(docType._id);
           const isUploading = uploadingType === docType._id;
 
           return (
-            <div key={docType._id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">{docType.name}</h3>
-                  {docType.description && (
-                    <p className="text-sm text-gray-600 mt-1">{docType.description}</p>
-                  )}
-                </div>
+            <div key={docType._id} className="bg-white rounded-lg shadow p-4 flex flex-col min-w-0">
+              <div className="flex flex-col gap-2 mb-4">
+                <h3 className="text-base font-bold text-gray-900 leading-tight">{docType.name}</h3>
+                {docType.description && (
+                  <p className="text-xs text-gray-600 line-clamp-2">{docType.description}</p>
+                )}
                 {!isUploading && (
                   <button
                     onClick={() => setUploadingType(docType._id)}
-                    className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors font-semibold"
+                    className="flex items-center justify-center gap-1.5 bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-900 transition-colors font-semibold text-sm w-full sm:w-auto"
                   >
-                    <Plus size={20} />
-                    Agregar {docType.name}
+                    <Plus size={16} />
+                    Agregar
                   </button>
                 )}
               </div>
+
+              {isLocationType(docType) && (
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-200 text-sm text-gray-600">
+                  <p className="font-medium text-gray-700">
+                    La ubicación del proyecto (mapa con buscador y pin) se configura en la columna izquierda, en <strong>Información del Proyecto</strong> → Ubicación.
+                  </p>
+                </div>
+              )}
 
               {isUploading && (
                 <form
@@ -182,8 +195,8 @@ export default function ProjectDocumentsByType({
                   <p className="text-sm">No hay documentos de este tipo aún</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                <div className="overflow-x-auto flex-1 min-h-0">
+                  <table className="min-w-full divide-y divide-gray-200 text-sm">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-900 uppercase">
@@ -246,7 +259,8 @@ export default function ProjectDocumentsByType({
               )}
             </div>
           );
-        })
+        })}
+        </div>
       )}
     </div>
   );

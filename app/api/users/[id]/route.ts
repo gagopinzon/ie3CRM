@@ -44,15 +44,11 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    await connectDB();
-
-    // Verificar permisos
-    const currentUser = await User.findById((session.user as any).id).populate('role');
-    const userRole = currentUser && typeof (currentUser as any).role === 'object' ? (currentUser as any).role : null;
-    
-    if (!userRole || !(userRole as any).permissions?.canManageUsers) {
-      return NextResponse.json({ error: 'No autorizado. Solo administradores pueden editar usuarios' }, { status: 403 });
+    if (!(session.user as any).permissions?.canManageUsers) {
+      return NextResponse.json({ error: 'No autorizado. Sin permiso para editar usuarios' }, { status: 403 });
     }
+
+    await connectDB();
 
     const body = await request.json();
     const { email, password, name, roleId } = body;
@@ -130,12 +126,8 @@ export async function DELETE(
 
     await connectDB();
 
-    // Verificar permisos
-    const currentUser = await User.findById((session.user as any).id).populate('role');
-    const userRole = currentUser && typeof (currentUser as any).role === 'object' ? (currentUser as any).role : null;
-    
-    if (!userRole || !(userRole as any).permissions?.canManageUsers) {
-      return NextResponse.json({ error: 'No autorizado. Solo administradores pueden eliminar usuarios' }, { status: 403 });
+    if (!(session.user as any).permissions?.canManageUsers) {
+      return NextResponse.json({ error: 'No autorizado. Sin permiso para eliminar usuarios' }, { status: 403 });
     }
 
     // No permitir eliminarse a sí mismo

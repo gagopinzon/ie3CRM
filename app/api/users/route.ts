@@ -14,15 +14,11 @@ export async function GET() {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    await connectDB();
-
-    // Verificar permisos
-    const currentUser = await User.findById((session.user as any).id).populate('role');
-    const userRole = currentUser && typeof (currentUser as any).role === 'object' ? (currentUser as any).role : null;
-    
-    if (!userRole || !(userRole as any).permissions?.canManageUsers) {
-      return NextResponse.json({ error: 'No autorizado. Solo administradores pueden ver usuarios' }, { status: 403 });
+    if (!(session.user as any).permissions?.canManageUsers) {
+      return NextResponse.json({ error: 'No autorizado. Sin permiso para gestionar usuarios' }, { status: 403 });
     }
+
+    await connectDB();
 
     const users = await User.find()
       .populate('role', 'name code description permissions')
@@ -43,15 +39,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    await connectDB();
-
-    // Verificar permisos
-    const currentUser = await User.findById((session.user as any).id).populate('role');
-    const userRole = currentUser && typeof (currentUser as any).role === 'object' ? (currentUser as any).role : null;
-    
-    if (!userRole || !(userRole as any).permissions?.canManageUsers) {
-      return NextResponse.json({ error: 'No autorizado. Solo administradores pueden crear usuarios' }, { status: 403 });
+    if (!(session.user as any).permissions?.canManageUsers) {
+      return NextResponse.json({ error: 'No autorizado. Sin permiso para crear usuarios' }, { status: 403 });
     }
+
+    await connectDB();
 
     const body = await request.json();
     const { email, password, name, roleId } = body;

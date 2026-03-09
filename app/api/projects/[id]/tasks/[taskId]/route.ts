@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
-import ProjectTask from '@/models/ProjectTask';
 import Project from '@/models/Project';
+import ProjectTask from '@/models/ProjectTask';
+import { recalculateProjectProgress } from '@/lib/projects';
+import { logActivity } from '@/lib/activityLog';
 
 export async function PUT(
   request: Request,
@@ -17,28 +19,55 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, status, order } = body;
+    const { title, description, status, order, assignedTo, dueDate } = body;
 
     await connectDB();
+
+    const existingTask = await ProjectTask.findOne({ _id: params.taskId, projectId: params.id })
+      .select('title status')
+      .lean();
+    const previousStatus = existingTask?.status;
 
     const updateData: any = {};
     if (title !== undefined) updateData.title = title.trim();
     if (description !== undefined) updateData.description = description?.trim();
     if (status !== undefined) updateData.status = status;
     if (order !== undefined) updateData.order = order;
+    if (assignedTo !== undefined) {
+      updateData.assignedTo = Array.isArray(assignedTo) ? assignedTo : assignedTo ? [assignedTo] : [];
+    }
+    if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
 
     const task = await ProjectTask.findOneAndUpdate(
       { _id: params.taskId, projectId: params.id },
       updateData,
       { new: true, runValidators: true }
-    ).populate('createdBy', 'name email');
+    )
+      .populate('createdBy', 'name email')
+      .populate('assignedTo', 'name email');
 
     if (!task) {
       return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
     }
 
-    // Actualizar progreso del proyecto
-    await updateProjectProgress(params.id);
+    if (status !== undefined && previousStatus && previousStatus !== status) {
+      const project = await Project.findById(params.id).select('name').lean();
+      const userId = (session.user as any).id;
+      const userName = (session.user as any).name ?? 'Usuario';
+      await logActivity({
+        type: 'task_status',
+        projectId: params.id,
+        projectName: (project as any)?.name ?? 'Proyecto',
+        entityId: params.taskId,
+        entityTitle: (task as any).title ?? existingTask?.title,
+        previousValue: previousStatus,
+        newValue: status,
+        userId,
+        userName,
+      });
+    }
+
+    await recalculateProjectProgress(params.id);
 
     return NextResponse.json(task, { status: 200 });
   } catch (error: any) {
@@ -68,24 +97,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
     }
 
-    // Actualizar progreso del proyecto
-    await updateProjectProgress(params.id);
+    await recalculateProjectProgress(params.id);
 
     return NextResponse.json({ message: 'Tarea eliminada exitosamente' }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-}
-
-async function updateProjectProgress(projectId: string) {
-  const tasks = await ProjectTask.find({ projectId });
-  if (tasks.length === 0) {
-    await Project.findByIdAndUpdate(projectId, { progress: 0 });
-    return;
-  }
-
-  const doneTasks = tasks.filter((task) => task.status === 'done').length;
-  const progress = Math.round((doneTasks / tasks.length) * 100);
-
-  await Project.findByIdAndUpdate(projectId, { progress });
 }

@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
+// Registrar Role antes de usar ref: 'Role' en el schema
+import '@/models/Role';
 
 export interface IUser extends Document {
   email: string;

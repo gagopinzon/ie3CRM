@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import ProjectDocument from '@/models/ProjectDocument';
 import { uploadToOracle } from '@/lib/oracle-storage';
+import { recalculateProjectProgress } from '@/lib/projects';
 
 export async function POST(request: Request) {
   try {
@@ -11,6 +12,10 @@ export async function POST(request: Request) {
 
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    if (!(session.user as any).permissions?.canManageDocuments) {
+      return NextResponse.json({ error: 'No tienes permiso para subir documentos' }, { status: 403 });
     }
 
     const formData = await request.formData();
@@ -81,6 +86,8 @@ export async function POST(request: Request) {
     const populatedDocument = await ProjectDocument.findById(document._id)
       .populate('documentTypeId', 'name')
       .populate('uploadedBy', 'name');
+
+    await recalculateProjectProgress(projectId);
 
     return NextResponse.json(populatedDocument, { status: 201 });
   } catch (error: any) {

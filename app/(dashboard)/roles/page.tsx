@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
 import Role from '@/models/Role';
 import RolesList from '@/components/roles/RolesList';
 import Link from 'next/link';
@@ -22,12 +21,7 @@ export default async function RolesPage() {
     redirect('/login');
   }
 
-  // Verificar permisos
-  await connectDB();
-  const currentUser = await User.findById((session.user as any).id).populate('role');
-  const userRole = currentUser && typeof (currentUser as any).role === 'object' ? (currentUser as any).role : null;
-  
-  if (!userRole || !(userRole as any).permissions?.canManageUsers) {
+  if (!(session.user as any).permissions?.canManageUsers) {
     redirect('/dashboard');
   }
 

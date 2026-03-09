@@ -7,6 +7,7 @@ interface Note {
   _id: string;
   content: string;
   type: 'note' | 'log';
+  eventDate?: string | null;
   createdBy: {
     _id: string;
     name: string;
@@ -19,14 +20,18 @@ interface Note {
 interface ProjectNotesProps {
   projectId: string;
   initialNotes?: Note[];
+  /** 'sideBySide' = Bitácora | Notas (50/50). 'stacked' = Bitácora arriba, Notas abajo. */
+  layout?: 'sideBySide' | 'stacked';
 }
 
-export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNotesProps) {
+export default function ProjectNotes({ projectId, initialNotes = [], layout = 'sideBySide' }: ProjectNotesProps) {
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [showForm, setShowForm] = useState(false);
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [formContent, setFormContent] = useState('');
   const [noteType, setNoteType] = useState<'note' | 'log'>('note');
+  const [addToCalendar, setAddToCalendar] = useState(false);
+  const [formEventDate, setFormEventDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -55,6 +60,11 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
       return;
     }
 
+    if (noteType === 'note' && addToCalendar && !formEventDate.trim()) {
+      setError('Indica la fecha para mostrarla en el calendario');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -65,7 +75,10 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ content: formContent }),
+          body: JSON.stringify({
+            content: formContent,
+            eventDate: noteType === 'note' && addToCalendar && formEventDate ? formEventDate : null,
+          }),
         });
 
         if (!response.ok) {
@@ -83,7 +96,11 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ content: formContent, type: noteType }),
+          body: JSON.stringify({
+            content: formContent,
+            type: noteType,
+            eventDate: noteType === 'note' && addToCalendar && formEventDate ? formEventDate : null,
+          }),
         });
 
         if (!response.ok) {
@@ -96,6 +113,8 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
       }
 
       setFormContent('');
+      setAddToCalendar(false);
+      setFormEventDate('');
       setShowForm(false);
       setNoteType('note');
     } catch (err: any) {
@@ -129,6 +148,10 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
     setEditingNote(note._id);
     setFormContent(note.content);
     setNoteType(note.type);
+    setAddToCalendar(!!(note.eventDate));
+    setFormEventDate(
+      note.eventDate ? new Date(note.eventDate).toISOString().slice(0, 10) : '',
+    );
     setShowForm(true);
   };
 
@@ -137,6 +160,8 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
     setEditingNote(null);
     setFormContent('');
     setNoteType('note');
+    setAddToCalendar(false);
+    setFormEventDate('');
     setError('');
   };
 
@@ -155,9 +180,9 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
   const logsList = notes.filter((note) => note.type === 'log');
 
   return (
-    <div className="space-y-6">
+    <div className={layout === 'stacked' ? 'flex flex-col gap-6' : 'grid grid-cols-1 md:grid-cols-2 gap-6'}>
       {/* Bitácora */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-white rounded-lg shadow-lg p-6 h-full">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <Clock size={24} className="text-gray-700" />
@@ -260,7 +285,7 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
       </div>
 
       {/* Notas del Proyecto */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="bg-white rounded-lg shadow-lg p-6 h-full">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <FileText size={24} className="text-gray-700" />
@@ -272,6 +297,8 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
               setEditingNote(null);
               setNoteType('note');
               setFormContent('');
+              setAddToCalendar(false);
+              setFormEventDate('');
             }}
             className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors font-semibold text-sm"
           >
@@ -296,6 +323,32 @@ export default function ProjectNotes({ projectId, initialNotes = [] }: ProjectNo
                 onChange={(e) => setFormContent(e.target.value)}
                 required
               />
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="add-to-calendar"
+                  checked={addToCalendar}
+                  onChange={(e) => setAddToCalendar(e.target.checked)}
+                  className="rounded border-gray-300 text-black focus:ring-black"
+                />
+                <label htmlFor="add-to-calendar" className="text-sm font-medium text-gray-700">
+                  Añadir al calendario
+                </label>
+              </div>
+              {addToCalendar && (
+                <div>
+                  <label htmlFor="note-event-date" className="block text-sm font-medium text-gray-700 mb-1">
+                    Fecha en el calendario
+                  </label>
+                  <input
+                    id="note-event-date"
+                    type="date"
+                    value={formEventDate}
+                    onChange={(e) => setFormEventDate(e.target.value)}
+                    className="w-full rounded-md border-2 border-gray-300 px-4 py-2 bg-white text-gray-900 sm:text-sm"
+                  />
+                </div>
+              )}
               <div className="flex justify-end gap-2">
                 <button
                   type="button"

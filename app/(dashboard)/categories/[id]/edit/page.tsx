@@ -19,8 +19,7 @@ export default async function EditCategoryPage({ params }: { params: { id: strin
     redirect('/login');
   }
 
-  // Solo admin puede editar categorías
-  if (session.user?.role !== 'admin') {
+  if (!(session.user as any).permissions?.canManageCategories) {
     redirect('/dashboard');
   }
 

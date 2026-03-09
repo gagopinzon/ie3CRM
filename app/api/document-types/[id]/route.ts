@@ -40,6 +40,10 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    if (!(session.user as any).permissions?.canManageDocumentTypes) {
+      return NextResponse.json({ error: 'No tienes permiso para editar tipos de documento' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { name, description, category, allowedFileTypes, requiresAddress } = body;
 
@@ -76,6 +80,10 @@ export async function DELETE(
 
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    if (!(session.user as any).permissions?.canManageDocumentTypes) {
+      return NextResponse.json({ error: 'No tienes permiso para eliminar tipos de documento' }, { status: 403 });
     }
 
     await connectDB();

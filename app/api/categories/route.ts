@@ -30,8 +30,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Solo admin puede crear categorías
-    if (session.user?.role !== 'admin') {
+    if (!(session.user as any).permissions?.canManageCategories) {
       return NextResponse.json({ error: 'Solo administradores pueden crear categorías' }, { status: 403 });
     }
 

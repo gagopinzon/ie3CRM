@@ -40,8 +40,7 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Solo admin puede modificar categorías
-    if (session.user?.role !== 'admin') {
+    if (!(session.user as any).permissions?.canManageCategories) {
       return NextResponse.json({ error: 'Solo administradores pueden modificar categorías' }, { status: 403 });
     }
 
@@ -85,8 +84,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Solo admin puede eliminar categorías
-    if (session.user?.role !== 'admin') {
+    if (!(session.user as any).permissions?.canManageCategories) {
       return NextResponse.json({ error: 'Solo administradores pueden eliminar categorías' }, { status: 403 });
     }
 

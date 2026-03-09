@@ -4,10 +4,15 @@ export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
 
 export interface IProjectTask extends Document {
   projectId: mongoose.Types.ObjectId;
+  documentTypeId?: mongoose.Types.ObjectId;
   title: string;
   description?: string;
   status: TaskStatus;
-  order: number; // Orden dentro de la columna
+  order: number;
+  /** Usuarios asignados para realizar la tarea */
+  assignedTo?: mongoose.Types.ObjectId[];
+  /** Fecha de compromiso (cuándo debe estar listo) */
+  dueDate?: Date;
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -19,6 +24,10 @@ const ProjectTaskSchema: Schema = new Schema<IProjectTask>(
       type: Schema.Types.ObjectId,
       ref: 'Project',
       required: [true, 'ID del proyecto es requerido'],
+    },
+    documentTypeId: {
+      type: Schema.Types.ObjectId,
+      ref: 'DocumentType',
     },
     title: {
       type: String,
@@ -38,6 +47,13 @@ const ProjectTaskSchema: Schema = new Schema<IProjectTask>(
       type: Number,
       default: 0,
     },
+    assignedTo: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    }],
+    dueDate: {
+      type: Date,
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -51,6 +67,8 @@ const ProjectTaskSchema: Schema = new Schema<IProjectTask>(
 
 // Índice para ordenar tareas por proyecto y orden
 ProjectTaskSchema.index({ projectId: 1, status: 1, order: 1 });
+// Un solo paso por tipo de documento por proyecto
+ProjectTaskSchema.index({ projectId: 1, documentTypeId: 1 }, { sparse: true, unique: true });
 
 const ProjectTask: Model<IProjectTask> =
   mongoose.models.ProjectTask || mongoose.model<IProjectTask>('ProjectTask', ProjectTaskSchema);

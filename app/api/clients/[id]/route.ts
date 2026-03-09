@@ -40,6 +40,10 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    if (!(session.user as any).permissions?.canManageClients) {
+      return NextResponse.json({ error: 'No tienes permiso para editar clientes' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       companyName,
@@ -101,6 +105,10 @@ export async function DELETE(
 
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    if (!(session.user as any).permissions?.canManageClients) {
+      return NextResponse.json({ error: 'No tienes permiso para eliminar clientes' }, { status: 403 });
     }
 
     await connectDB();

@@ -26,8 +26,7 @@ export default async function CategoriesPage() {
     redirect('/login');
   }
 
-  // Solo admin puede ver esta página
-  if (session.user?.role !== 'admin') {
+  if (!(session.user as any).permissions?.canManageCategories) {
     redirect('/dashboard');
   }
 

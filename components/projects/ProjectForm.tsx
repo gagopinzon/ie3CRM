@@ -2,11 +2,12 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Plus, Loader2 } from 'lucide-react';
 import { DocumentType } from '@/shared/types';
 
 interface ProjectFormProps {
   documentTypes: DocumentType[];
+  clients?: { _id: string; companyName: string }[];
   initialData?: {
     _id?: string;
     name?: string;
@@ -21,13 +22,14 @@ export default function ProjectForm({ documentTypes, clients, initialData }: Pro
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  /** Lista de tipos (se amplía al dar de alta uno nuevo en caliente) */
+  const [documentTypesList, setDocumentTypesList] = useState<DocumentType[]>(documentTypes);
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     description: initialData?.description || '',
     client: initialData?.client || '',
     documentTypes: initialData?.documentTypes || [],
     kanbanColumn: initialData?.kanbanColumn || 'Contacted',
-    progress: initialData?.progress || 0,
   });
 
   const handleSubmit = async (e: FormEvent) => {
@@ -68,6 +70,53 @@ export default function ProjectForm({ documentTypes, clients, initialData }: Pro
         ? prev.documentTypes.filter((id) => id !== docTypeId)
         : [...prev.documentTypes, docTypeId],
     }));
+  };
+
+  /** Dar de alta un nuevo tipo de documento en caliente */
+  const [newTypeName, setNewTypeName] = useState('');
+  const [newTypeDescription, setNewTypeDescription] = useState('');
+  const [creatingType, setCreatingType] = useState(false);
+  const [createTypeError, setCreateTypeError] = useState('');
+
+  const createAndAddDocumentType = async () => {
+    const name = newTypeName.trim();
+    if (!name) {
+      setCreateTypeError('Escribe el nombre del tipo');
+      return;
+    }
+    if (documentTypesList.some((dt) => dt.name.toLowerCase() === name.toLowerCase())) {
+      setCreateTypeError('Ya existe un tipo con ese nombre');
+      return;
+    }
+    setCreateTypeError('');
+    setCreatingType(true);
+    try {
+      const res = await fetch('/api/document-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          description: newTypeDescription.trim() || undefined,
+          allowedFileTypes: ['documento'],
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Error al crear el tipo');
+      }
+      const created = await res.json();
+      setDocumentTypesList((prev) => [...prev, created]);
+      setFormData((prev) => ({
+        ...prev,
+        documentTypes: [...prev.documentTypes, created._id],
+      }));
+      setNewTypeName('');
+      setNewTypeDescription('');
+    } catch (err: any) {
+      setCreateTypeError(err.message);
+    } finally {
+      setCreatingType(false);
+    }
   };
 
   return (
@@ -125,7 +174,48 @@ export default function ProjectForm({ documentTypes, clients, initialData }: Pro
           <label className="block text-sm font-semibold text-gray-900 mb-3">
             Tipos de Documentos
           </label>
-          {documentTypes.length === 0 ? (
+          <div className="mb-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <p className="text-sm font-semibold text-gray-700 mb-2">Dar de alta un tipo nuevo</p>
+            <p className="text-xs text-gray-600 mb-3">Si el tipo que necesitas no está en la lista, créalo aquí y se asignará al proyecto.</p>
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="flex-1 min-w-[160px]">
+                <label htmlFor="new-type-name" className="sr-only">Nombre del tipo</label>
+                <input
+                  id="new-type-name"
+                  type="text"
+                  placeholder="Ej: Pez globo, Permiso municipal..."
+                  value={newTypeName}
+                  onChange={(e) => setNewTypeName(e.target.value)}
+                  onFocus={() => setCreateTypeError('')}
+                  className="w-full rounded-md border-2 border-gray-300 px-3 py-2 text-sm font-medium text-gray-900 placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-offset-0"
+                />
+              </div>
+              <div className="flex-1 min-w-[160px]">
+                <label htmlFor="new-type-desc" className="sr-only">Descripción (opcional)</label>
+                <input
+                  id="new-type-desc"
+                  type="text"
+                  placeholder="Descripción (opcional)"
+                  value={newTypeDescription}
+                  onChange={(e) => setNewTypeDescription(e.target.value)}
+                  className="w-full rounded-md border-2 border-gray-300 px-3 py-2 text-sm font-medium text-gray-900 placeholder-gray-400 focus:border-black focus:ring-2 focus:ring-black focus:ring-offset-0"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={createAndAddDocumentType}
+                disabled={creatingType || !newTypeName.trim()}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+              >
+                {creatingType ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                {creatingType ? 'Creando...' : 'Dar de alta y asignar'}
+              </button>
+            </div>
+            {createTypeError && (
+              <p className="mt-2 text-sm text-red-600 font-medium">{createTypeError}</p>
+            )}
+          </div>
+          {documentTypesList.length === 0 ? (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-yellow-50">
               <p className="text-gray-700 text-sm font-semibold mb-2">⚠️ No hay tipos de documentos disponibles</p>
               <p className="text-gray-600 text-xs mb-4">Necesitas ejecutar el seed de la base de datos para cargar los tipos predefinidos</p>
@@ -139,7 +229,7 @@ export default function ProjectForm({ documentTypes, clients, initialData }: Pro
           ) : (
             <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
-                {documentTypes.map((docType) => {
+                {documentTypesList.map((docType) => {
                   const isChecked = formData.documentTypes.includes(docType._id);
                   return (
                     <label
@@ -178,47 +268,6 @@ export default function ProjectForm({ documentTypes, clients, initialData }: Pro
               )}
             </div>
           )}
-        </div>
-
-        <div>
-          <label htmlFor="progress" className="block text-sm font-semibold text-gray-900 mb-2">
-            Progreso del Proyecto: {formData.progress}%
-          </label>
-          <div className="space-y-2">
-            <input
-              type="range"
-              id="progress"
-              min="0"
-              max="100"
-              step="1"
-              className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
-              value={formData.progress}
-              onChange={(e) => setFormData({ ...formData, progress: parseInt(e.target.value) })}
-            />
-            <div className="flex justify-between text-xs text-gray-500">
-              <span>0%</span>
-              <span>50%</span>
-              <span>100%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-              <div
-                className="bg-black h-full transition-all duration-300 rounded-full"
-                style={{ width: `${formData.progress}%` }}
-              />
-            </div>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              className="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-black focus:ring-2 focus:ring-black sm:text-sm px-4 py-3 bg-white text-gray-900 font-medium"
-              value={formData.progress}
-              onChange={(e) => {
-                const value = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-                setFormData({ ...formData, progress: value });
-              }}
-              placeholder="0-100"
-            />
-          </div>
         </div>
 
         <div className="flex justify-end gap-4">

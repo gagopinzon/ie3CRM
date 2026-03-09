@@ -10,6 +10,9 @@ export interface IProject extends Document {
   documentTypes: mongoose.Types.ObjectId[];
   kanbanColumn: KanbanColumnType;
   progress?: number;
+  locationAddress?: string;
+  locationLat?: number;
+  locationLng?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,6 +59,9 @@ const ProjectSchema: Schema = new Schema<IProject>(
     max: 100,
     default: 0,
   },
+  locationAddress: { type: String, trim: true },
+  locationLat: { type: Number },
+  locationLng: { type: Number },
   },
   {
     timestamps: true,

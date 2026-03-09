@@ -88,24 +88,13 @@ export default function LoginPage() {
               <NextImage
                 src="/logo.svg"
                 alt="IE3 Logo"
-                width={40}
-                height={40}
+                width={60}
+                height={60}
                 className="w-10 h-10"
               />
-              <h1 className="text-3xl font-bold tracking-tight">IE<span className="text-gray-400">3</span></h1>
             </div>
           </div>
-          <div className="space-y-4">
-            <h2 className="text-5xl font-bold leading-tight tracking-tighter">
-              RÁPIDO
-            </h2>
-            <h2 className="text-5xl font-bold leading-tight tracking-tighter text-gray-300">
-              SEGURO
-            </h2>
-            <h2 className="text-5xl font-bold leading-tight tracking-tighter text-gray-400">
-              EFICIENTE
-            </h2>
-          </div>
+         
         </div>
       </div>
 
@@ -204,15 +193,7 @@ export default function LoginPage() {
               {loading ? 'INICIANDO SESIÓN...' : 'INICIAR SESIÓN'}
             </button>
 
-            <div className="text-center text-sm text-gray-600">
-              ¿No tienes una cuenta?{' '}
-              <Link
-                href="/register"
-                className="text-black hover:text-gray-700 font-semibold transition-colors"
-              >
-                REGISTRATE
-              </Link>
-            </div>
+           
           </form>
         </div>
       </div>

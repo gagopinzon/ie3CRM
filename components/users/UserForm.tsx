@@ -94,98 +94,85 @@ export default function UserForm({ roles, initialData }: UserFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-6 max-w-xl">
       {error && (
-        <div className="mb-6 bg-red-50 border-l-4 border-red-500 text-red-900 px-4 py-3 rounded font-medium">
+        <div className="mb-4 bg-red-50 border-l-4 border-red-500 text-red-900 px-3 py-2 rounded text-sm">
           {error}
         </div>
       )}
 
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
-            Nombre Completo *
-          </label>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
           <input
             type="text"
             id="name"
             required
-            className="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-black focus:ring-2 focus:ring-black sm:text-sm px-4 py-3 bg-white text-gray-900 font-medium"
+            className="w-full rounded-md border-2 border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-black focus:ring-2 focus:ring-black"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Ej: Juan Pérez"
+            placeholder="Juan Pérez"
           />
         </div>
-
         <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
-            Email *
-          </label>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
           <input
             type="email"
             id="email"
             required
-            className="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-black focus:ring-2 focus:ring-black sm:text-sm px-4 py-3 bg-white text-gray-900 font-medium"
+            className="w-full rounded-md border-2 border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-black focus:ring-2 focus:ring-black disabled:bg-gray-100"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="ejemplo@correo.com"
+            placeholder="correo@ejemplo.com"
             disabled={!!initialData}
           />
-          {initialData && (
-            <p className="mt-1 text-xs text-gray-500">El email no se puede modificar</p>
-          )}
+          {initialData && <p className="mt-0.5 text-xs text-gray-500">No editable</p>}
         </div>
-
         <div>
-          <label htmlFor="password" className="block text-sm font-semibold text-gray-900 mb-2">
-            {initialData ? 'Nueva Contraseña (dejar vacío para mantener la actual)' : 'Contraseña *'}
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            {initialData ? 'Nueva contraseña' : 'Contraseña *'}
           </label>
           <input
             type="password"
             id="password"
             required={!initialData}
-            className="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-black focus:ring-2 focus:ring-black sm:text-sm px-4 py-3 bg-white text-gray-900 font-medium"
+            className="w-full rounded-md border-2 border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-black focus:ring-2 focus:ring-black"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mín. 6 caracteres"
           />
         </div>
-
         <div>
-          <label htmlFor="roleId" className="block text-sm font-semibold text-gray-900 mb-2">
-            Rol *
-          </label>
+          <label htmlFor="roleId" className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
           <select
             id="roleId"
             required
-            className="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-black focus:ring-2 focus:ring-black sm:text-sm px-4 py-3 bg-white text-gray-900 font-medium"
+            className="w-full rounded-md border-2 border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-black focus:ring-2 focus:ring-black"
             value={formData.roleId}
             onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
           >
-            <option value="">Selecciona un rol</option>
+            <option value="">Seleccionar...</option>
             {roles.map((role) => (
-              <option key={role._id} value={role._id}>
-                {role.name} {role.description ? `- ${role.description}` : ''}
-              </option>
+              <option key={role._id} value={role._id}>{role.name}</option>
             ))}
           </select>
         </div>
+      </div>
 
-        <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
-          <Link
-            href="/users"
-            className="px-6 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-semibold hover:bg-gray-50 transition-colors"
-          >
-            Cancelar
-          </Link>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-black text-white rounded-lg font-semibold hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Guardando...' : initialData ? 'Actualizar Usuario' : 'Crear Usuario'}
-          </button>
-        </div>
+      <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+        <Link
+          href="/users"
+          className="px-4 py-2 border-2 border-gray-300 rounded-lg text-gray-900 font-medium text-sm hover:bg-gray-50"
+        >
+          Cancelar
+        </Link>
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-4 py-2 bg-black text-white rounded-lg font-medium text-sm hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Guardando...' : initialData ? 'Actualizar' : 'Crear usuario'}
+        </button>
       </div>
     </form>
   );

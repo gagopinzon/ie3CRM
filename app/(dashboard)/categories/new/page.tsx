@@ -11,8 +11,7 @@ export default async function NewCategoryPage() {
     redirect('/login');
   }
 
-  // Solo admin puede crear categorías
-  if (session.user?.role !== 'admin') {
+  if (!(session.user as any).permissions?.canManageCategories) {
     redirect('/dashboard');
   }
 

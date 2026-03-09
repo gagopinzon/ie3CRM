@@ -39,7 +39,7 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { content, type } = body;
+    const { content, type, eventDate } = body;
 
     if (!content || !content.trim()) {
       return NextResponse.json(
@@ -50,12 +50,20 @@ export async function POST(
 
     await connectDB();
 
-    const note = await ProjectNote.create({
+    const noteData: Record<string, unknown> = {
       projectId: params.id,
       content: content.trim(),
       type: type || 'note',
       createdBy: session.user?.id,
-    });
+    };
+    if (eventDate != null && eventDate !== '') {
+      const d = new Date(eventDate);
+      if (!Number.isNaN(d.getTime())) noteData.eventDate = d;
+    } else {
+      noteData.eventDate = undefined;
+    }
+
+    const note = await ProjectNote.create(noteData);
 
     const populatedNote = await ProjectNote.findById(note._id)
       .populate('createdBy', 'name email');

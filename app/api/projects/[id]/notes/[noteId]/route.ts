@@ -16,7 +16,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { content } = body;
+    const { content, eventDate } = body;
 
     if (!content || !content.trim()) {
       return NextResponse.json(
@@ -27,9 +27,17 @@ export async function PUT(
 
     await connectDB();
 
+    const update: Record<string, unknown> = { content: content.trim() };
+    if (eventDate != null && eventDate !== '') {
+      const d = new Date(eventDate);
+      if (!Number.isNaN(d.getTime())) update.eventDate = d;
+    } else {
+      (update as any).$unset = { eventDate: 1 };
+    }
+
     const note = await ProjectNote.findOneAndUpdate(
       { _id: params.noteId, projectId: params.id },
-      { content: content.trim() },
+      update,
       { new: true, runValidators: true }
     ).populate('createdBy', 'name email');
 
