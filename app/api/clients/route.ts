@@ -76,6 +76,15 @@ export async function POST(request: Request) {
 
     await connectDB();
 
+    const validContacts = [
+      {
+        name: contactName,
+        email: contactEmail,
+        phone: contactPhone,
+        position: contactPosition,
+      },
+    ];
+
     const client = await Client.create({
       companyName,
       rfc,

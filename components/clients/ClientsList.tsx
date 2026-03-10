@@ -67,12 +67,15 @@ export default function ClientsList({ initialClients }: ClientsListProps) {
     }
   };
 
-  const filteredClients = clients.filter(
-    (client) =>
-      client.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.contactName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (client.rfc && client.rfc.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredClients = clients.filter((client) => {
+    const term = searchTerm.toLowerCase();
+    const companyMatch = client.companyName.toLowerCase().includes(term);
+    const rfcMatch = client.rfc ? client.rfc.toLowerCase().includes(term) : false;
+    const contactsMatch = Array.isArray(client.contacts)
+      ? client.contacts.some((c) => (c.name || '').toLowerCase().includes(term))
+      : false;
+    return companyMatch || rfcMatch || contactsMatch;
+  });
 
   if (loading && clients.length === 0) {
     return <div className="text-center py-8">Cargando clientes...</div>;

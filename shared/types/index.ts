@@ -16,7 +16,7 @@ export interface Project {
   _id: string;
   name: string;
   description: string;
-  client: string | Client;
+  client: string;
   status: string;
   assignedTo?: string;
   documentTypes: string[];

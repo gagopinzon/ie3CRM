@@ -59,6 +59,7 @@ export async function PUT(
       contactPosition,
       notes,
       status,
+      contacts,
     } = body;
 
     await connectDB();

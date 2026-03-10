@@ -30,20 +30,23 @@ async function getProjectData(id: string) {
 
   const inventorySerialized = (inventoryAssignments as any[]).map((a: any) => ({
     _id: a._id.toString(),
-    inventoryItemId: a.inventoryItemId?._id?.toString() ?? a.inventoryItemId?.toString(),
+    inventoryItemId:
+      (a.inventoryItemId as any)?._id?.toString?.() ??
+      (a.inventoryItemId as any)?.toString?.() ??
+      '',
     inventoryItem: a.inventoryItemId
       ? {
-          _id: (a.inventoryItemId as any)._id?.toString(),
-          name: (a.inventoryItemId as any).name,
-          type: (a.inventoryItemId as any).type,
-          quantity: (a.inventoryItemId as any).quantity,
-          unit: (a.inventoryItemId as any).unit,
+          _id: (a.inventoryItemId as any)._id?.toString() ?? '',
+          name: (a.inventoryItemId as any).name ?? '',
+          type: (a.inventoryItemId as any).type ?? '',
+          quantity: Number((a.inventoryItemId as any).quantity) || 0,
+          unit: (a.inventoryItemId as any).unit ?? undefined,
         }
       : null,
-    startDate: a.startDate ? new Date(a.startDate).toISOString() : null,
-    endDate: a.endDate ? new Date(a.endDate).toISOString() : null,
-    quantity: a.quantity,
-    notes: a.notes,
+    startDate: a.startDate ? new Date(a.startDate).toISOString() : '',
+    endDate: a.endDate ? new Date(a.endDate).toISOString() : '',
+    quantity: Number(a.quantity) || 0,
+    notes: typeof a.notes === 'string' ? a.notes : undefined,
   }));
 
   return {

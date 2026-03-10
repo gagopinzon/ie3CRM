@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Edit, Trash2, GripVertical, User, Calendar } from 'lucide-react';
 import { useDrag, useDrop } from 'react-dnd';
+import type { RefCallback } from 'react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { getStatusHexColor, getTaskCardPalette, KANBAN_COLUMN_THEME } from '@/lib/ui/workflowTheme';
@@ -39,7 +40,9 @@ function getAssignedIds(task: Task): string[] {
   const a = task.assignedTo;
   if (!a) return [];
   const arr = Array.isArray(a) ? a : [a];
-  return arr.map((x) => (typeof x === 'object' && x?._id ? x._id : x)).filter(Boolean);
+  return arr
+    .map((x) => (typeof x === 'object' && x?._id ? x._id : x))
+    .filter((id): id is string => typeof id === 'string' && !!id);
 }
 
 function getAssignedNames(task: Task): string {
@@ -78,6 +81,8 @@ function TaskCard({
     }),
   });
 
+  const dragRef = drag as unknown as RefCallback<HTMLDivElement>;
+
   const assignedIds = getAssignedIds(task);
   const assignedNames = getAssignedNames(task);
   const palette = getTaskCardPalette(task.status);
@@ -110,7 +115,7 @@ function TaskCard({
 
   return (
     <div
-      ref={drag}
+      ref={dragRef}
       className={`rounded-2xl p-4 mb-3 transition-all duration-200 border ${
         isDragging
           ? 'opacity-50 scale-[0.98]'
@@ -286,9 +291,9 @@ function Column({
   onChangeDueDate,
   readOnly,
   onMove,
-  users,
+  users = [],
 }: {
-  column: typeof columns[number];
+  column: (typeof columns)[number];
   tasks: Task[];
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
@@ -310,6 +315,8 @@ function Column({
     }),
   });
 
+  const dropRef = drop as unknown as RefCallback<HTMLDivElement>;
+
   const hex = getStatusHexColor(column.id);
   const shellStyle: React.CSSProperties = {
     backgroundColor: `${hex}10`,
@@ -323,7 +330,7 @@ function Column({
 
   return (
     <div
-      ref={drop}
+      ref={dropRef}
       style={shellStyle}
       className="flex flex-col rounded-2xl border shadow-[0_2px_12px_rgba(2,48,71,0.08)] transition-shadow"
     >

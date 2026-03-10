@@ -23,7 +23,7 @@ export interface ProjectPageContentProps {
   };
   /** Solo en edición: id del proyecto, tareas y usuarios para asignar */
   projectId?: string;
-  tasks?: unknown[];
+  tasks?: any[];
   users?: { _id: string; name: string }[];
   inventoryAssignments?: Array<{
     _id: string;
@@ -92,7 +92,7 @@ export default function ProjectPageContent({
 
       <div className="bg-white rounded-lg shadow-lg p-6">
         {projectId ? (
-          <ProjectTasksKanban projectId={projectId} initialTasks={tasks ?? []} users={users} />
+          <ProjectTasksKanban projectId={projectId} initialTasks={(tasks ?? []) as any} users={users} />
         ) : (
           <div className="text-center py-12 text-gray-500">
             <p className="font-medium">Tareas del proyecto</p>

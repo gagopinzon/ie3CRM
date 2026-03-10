@@ -145,7 +145,7 @@ export default function DocumentTypeForm({ categories, initialData }: DocumentTy
               id="category"
               className="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-black focus:ring-2 focus:ring-black sm:text-sm px-4 py-3 bg-white text-gray-900 font-medium"
               value={formData.category || ''}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value || undefined })}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
               <option value="">Sin categoría</option>
               {categories.map((cat) => (

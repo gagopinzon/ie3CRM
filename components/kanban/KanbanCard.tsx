@@ -1,6 +1,7 @@
 'use client';
 
 import { useDrag } from 'react-dnd';
+import type { RefCallback } from 'react';
 import { Project } from '@/shared/types';
 import Link from 'next/link';
 import { FileText } from 'lucide-react';
@@ -18,10 +19,12 @@ export default function KanbanCard({ project }: KanbanCardProps) {
     }),
   });
 
+  const dragRef = drag as unknown as RefCallback<HTMLDivElement>;
+
   return (
     <Link href={`/projects/${project._id}`}>
       <div
-        ref={drag}
+        ref={dragRef}
         className={`bg-white rounded-lg shadow p-4 cursor-move hover:shadow-md transition-shadow ${
           isDragging ? 'opacity-50' : ''
         }`}

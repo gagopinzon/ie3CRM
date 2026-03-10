@@ -12,7 +12,7 @@ import '@/models/DocumentType'; // Registrar modelo para refs en Project
 import Link from 'next/link';
 import { Edit, FileUp, Activity } from 'lucide-react';
 import { getStatusLabel } from '@/lib/ui/workflowTheme';
-import DashboardDeliveriesSection, { type TaskWithDue } from '@/components/dashboard/DashboardDeliveriesSection';
+import DashboardDeliveriesSection, { type TaskWithDue, type NoteEvent } from '@/components/dashboard/DashboardDeliveriesSection';
 
 export const dynamic = 'force-dynamic';
 
@@ -154,17 +154,22 @@ async function getDashboardData(session: any) {
     })
     .filter((t): t is TaskWithDue => t !== null);
 
-  const noteEventsSerialized = (notesWithEventDate as any[]).map((n) => ({
-    _id: n._id.toString(),
-    content: n.content,
-    eventDate: n.eventDate ? new Date(n.eventDate).toISOString() : null,
-    projectId: n.projectId
-      ? {
-          _id: (n.projectId as any)._id?.toString?.() ?? n.projectId.toString(),
-          name: (n.projectId as any).name ?? '—',
-        }
-      : null,
-  })).filter((n) => n.eventDate);
+  const noteEventsSerialized: NoteEvent[] = (notesWithEventDate as any[])
+    .map((n): NoteEvent | null => {
+      if (!n.eventDate) return null;
+      return {
+        _id: n._id.toString(),
+        content: n.content,
+        eventDate: new Date(n.eventDate).toISOString(),
+        projectId: n.projectId
+          ? {
+              _id: (n.projectId as any)._id?.toString?.() ?? n.projectId.toString(),
+              name: (n.projectId as any).name ?? '—',
+            }
+          : null,
+      };
+    })
+    .filter((n): n is NoteEvent => n !== null);
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());

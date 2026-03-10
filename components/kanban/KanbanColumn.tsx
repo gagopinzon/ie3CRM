@@ -1,6 +1,7 @@
 'use client';
 
 import { useDrop } from 'react-dnd';
+import type { RefCallback } from 'react';
 import { Project, KanbanColumn as KanbanColumnType } from '@/shared/types';
 import KanbanCard from './KanbanCard';
 
@@ -27,9 +28,11 @@ export default function KanbanColumnComponent({
     }),
   });
 
+  const dropRef = drop as unknown as RefCallback<HTMLDivElement>;
+
   return (
     <div
-      ref={drop}
+      ref={dropRef}
       className={`flex-shrink-0 w-80 bg-gray-50 rounded-lg p-4 ${
         isOver ? 'bg-indigo-50 border-2 border-indigo-300' : ''
       }`}

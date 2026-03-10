@@ -109,7 +109,7 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {typeof project.client === 'object' ? project.client.companyName : project.client}
+                  {project.client}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

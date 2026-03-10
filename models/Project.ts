@@ -4,7 +4,7 @@ import { KanbanColumnType } from '@/shared/types';
 export interface IProject extends Document {
   name: string;
   description: string;
-  client: string;
+  client: mongoose.Types.ObjectId;
   status: string;
   assignedTo?: mongoose.Types.ObjectId;
   documentTypes: mongoose.Types.ObjectId[];
