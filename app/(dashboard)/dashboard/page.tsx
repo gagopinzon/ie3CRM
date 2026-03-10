@@ -12,7 +12,7 @@ import '@/models/DocumentType'; // Registrar modelo para refs en Project
 import Link from 'next/link';
 import { Edit, FileUp, Activity } from 'lucide-react';
 import { getStatusLabel } from '@/lib/ui/workflowTheme';
-import DashboardDeliveriesSection from '@/components/dashboard/DashboardDeliveriesSection';
+import DashboardDeliveriesSection, { type TaskWithDue } from '@/components/dashboard/DashboardDeliveriesSection';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,32 +124,35 @@ async function getDashboardData(session: any) {
     };
   });
 
-  const tasksWithDueSerialized = (tasksWithDue as any[])
-    .map((t) => ({
-      _id: t._id.toString(),
-      title: t.title,
-      dueDate: t.dueDate ? new Date(t.dueDate).toISOString() : null,
-      status: t.status,
-      projectId: t.projectId
-        ? {
-            _id: (t.projectId as any)._id?.toString?.() ?? t.projectId.toString(),
-            name: (t.projectId as any).name ?? '—',
-          }
-        : null,
-      assignedTo: Array.isArray(t.assignedTo)
-        ? t.assignedTo.map((u: any) => ({
-            _id: u._id?.toString?.() ?? u.toString(),
-            name: (u as any).name ?? '—',
-          }))
-        : [],
-      documentTypeId: t.documentTypeId
-        ? {
-            _id: (t.documentTypeId as any)._id?.toString?.() ?? (t.documentTypeId as any).toString?.(),
-            name: (t.documentTypeId as any).name ?? '—',
-          }
-        : null,
-    }))
-    .filter((t) => t.dueDate);
+  const tasksWithDueSerialized: TaskWithDue[] = (tasksWithDue as any[])
+    .map((t): TaskWithDue | null => {
+      if (!t.dueDate) return null;
+      return {
+        _id: t._id.toString(),
+        title: t.title,
+        dueDate: new Date(t.dueDate).toISOString(),
+        status: t.status,
+        projectId: t.projectId
+          ? {
+              _id: (t.projectId as any)._id?.toString?.() ?? t.projectId.toString(),
+              name: (t.projectId as any).name ?? '—',
+            }
+          : '',
+        assignedTo: Array.isArray(t.assignedTo)
+          ? t.assignedTo.map((u: any) => ({
+              _id: u._id?.toString?.() ?? u.toString(),
+              name: (u as any).name ?? '—',
+            }))
+          : [],
+        documentTypeId: t.documentTypeId
+          ? {
+              _id: (t.documentTypeId as any)._id?.toString?.() ?? (t.documentTypeId as any).toString?.(),
+              name: (t.documentTypeId as any).name ?? '—',
+            }
+          : null,
+      };
+    })
+    .filter((t): t is TaskWithDue => t !== null);
 
   const noteEventsSerialized = (notesWithEventDate as any[]).map((n) => ({
     _id: n._id.toString(),
