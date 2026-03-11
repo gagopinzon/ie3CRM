@@ -1,10 +1,14 @@
 import mongoose from 'mongoose';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your Mongo URI to .env.local');
+function getMongoUri(): string {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error(
+      'MONGODB_URI is required. Add it to .env.local (or .env) and restart. See https://www.mongodb.com/docs/atlas/reference/connection-string/'
+    );
+  }
+  return uri;
 }
-
-const MONGODB_URI: string = process.env.MONGODB_URI;
 
 interface MongooseCache {
   conn: typeof mongoose | null;
@@ -30,8 +34,8 @@ async function connectDB(): Promise<typeof mongoose> {
     const opts = {
       bufferCommands: false,
     };
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    const uri = getMongoUri();
+    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
       return mongoose;
     });
   }
