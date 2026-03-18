@@ -13,6 +13,18 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
   const [projects, setProjects] = useState<Project[]>(initialProjects || []);
   const [loading, setLoading] = useState(false);
 
+  const getClientDisplay = (client: unknown): string => {
+    if (typeof client === 'string') return client;
+    if (!client || typeof client !== 'object') return '—';
+    const anyClient = client as any;
+    return (
+      (typeof anyClient.companyName === 'string' && anyClient.companyName) ||
+      (typeof anyClient.name === 'string' && anyClient.name) ||
+      (typeof anyClient._id === 'string' && anyClient._id) ||
+      '—'
+    );
+  };
+
   const fetchProjects = async () => {
     setLoading(true);
     try {
@@ -109,7 +121,7 @@ export default function ProjectsList({ initialProjects }: ProjectsListProps) {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {project.client}
+                  {getClientDisplay((project as any).client)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

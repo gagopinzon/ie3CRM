@@ -16,9 +16,21 @@ export default function KanbanBoard({ initialColumns, initialProjects }: KanbanB
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const getClientDisplay = (client: unknown): string => {
+    if (typeof client === 'string') return client;
+    if (!client || typeof client !== 'object') return '—';
+    const anyClient = client as any;
+    return (
+      (typeof anyClient.companyName === 'string' && anyClient.companyName) ||
+      (typeof anyClient.name === 'string' && anyClient.name) ||
+      (typeof anyClient._id === 'string' && anyClient._id) ||
+      '—'
+    );
+  };
+
   const filteredProjects = projects.filter((project) =>
     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.client.toLowerCase().includes(searchTerm.toLowerCase())
+    getClientDisplay((project as any).client).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleMoveProject = async (projectId: string, newColumn: string) => {
