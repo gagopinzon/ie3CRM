@@ -10,19 +10,34 @@ interface RoleFormProps {
     name: string;
     code: string;
     description?: string;
-    permissions: {
-      canManageUsers: boolean;
-      canManageProjects: boolean;
-      canManageClients: boolean;
-      canManageDocuments: boolean;
-      canManageCategories: boolean;
-      canManageDocumentTypes: boolean;
-      canViewAllProjects: boolean;
-      canEditAllProjects: boolean;
-    };
+    permissions: any;
     isSystem: boolean;
   };
 }
+
+const PERMISSIONS_CONFIG = [
+  { key: 'canManageUsers', label: 'Gestionar Usuarios', description: 'Crear, editar y eliminar usuarios y roles' },
+  { key: 'canManageProjects', label: 'Gestionar Proyectos', description: 'Crear, editar y eliminar proyectos' },
+  { key: 'canManageClients', label: 'Gestionar Clientes', description: 'Crear, editar y eliminar clientes' },
+  { key: 'canManageDocuments', label: 'Gestionar Documentos', description: 'Subir y eliminar documentos' },
+  { key: 'canManageCategories', label: 'Gestionar Categorías', description: 'Crear y editar categorías de documentos' },
+  { key: 'canManageDocumentTypes', label: 'Gestionar Tipos de Documentos', description: 'Crear y editar tipos de documentos' },
+  { key: 'canManageInventory', label: 'Gestionar Inventarios', description: 'Crear y editar ítems del inventario de la compañía' },
+  { key: 'canViewAllProjects', label: 'Ver Todos los Proyectos', description: 'Acceso a todos los proyectos del sistema independientemente del responsable' },
+  { key: 'canEditAllProjects', label: 'Editar Todos los Proyectos', description: 'Modificar cualquier proyecto del sistema' },
+] as const;
+
+const DEFAULT_PERMISSIONS = {
+  canManageUsers: false,
+  canManageProjects: true,
+  canManageClients: true,
+  canManageDocuments: true,
+  canManageCategories: false,
+  canManageDocumentTypes: true,
+  canManageInventory: true,
+  canViewAllProjects: true,
+  canEditAllProjects: false,
+};
 
 export default function RoleForm({ initialData }: RoleFormProps) {
   const router = useRouter();
@@ -30,16 +45,10 @@ export default function RoleForm({ initialData }: RoleFormProps) {
     name: initialData?.name || '',
     code: initialData?.code || '',
     description: initialData?.description || '',
-    permissions: initialData?.permissions || {
-      canManageUsers: false,
-      canManageProjects: true,
-      canManageClients: true,
-      canManageDocuments: true,
-      canManageCategories: false,
-      canManageDocumentTypes: true,
-      canViewAllProjects: true,
-      canEditAllProjects: false,
-    },
+    permissions: {
+      ...DEFAULT_PERMISSIONS,
+      ...(initialData?.permissions || {}),
+    } as any,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -84,7 +93,8 @@ export default function RoleForm({ initialData }: RoleFormProps) {
     }
   };
 
-  const togglePermission = (key: keyof typeof formData.permissions) => {
+  const togglePermission = (key: string) => {
+    if (initialData?.code === 'admin') return;
     setFormData({
       ...formData,
       permissions: {
@@ -92,6 +102,15 @@ export default function RoleForm({ initialData }: RoleFormProps) {
         [key]: !formData.permissions[key],
       },
     });
+  };
+
+  const setAllPermissions = (value: boolean) => {
+    if (initialData?.code === 'admin') return;
+    const newPermissions = { ...formData.permissions };
+    PERMISSIONS_CONFIG.forEach(config => {
+      newPermissions[config.key] = value;
+    });
+    setFormData({ ...formData, permissions: newPermissions });
   };
 
   return (
@@ -159,111 +178,63 @@ export default function RoleForm({ initialData }: RoleFormProps) {
         </div>
 
         <div className="border-t border-gray-200 pt-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Permisos</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900">Permisos</h3>
+            {formData.code !== 'admin' && (
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setAllPermissions(true)}
+                  className="text-xs text-indigo-600 hover:text-indigo-800 font-bold uppercase tracking-wider"
+                >
+                  Seleccionar Todos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAllPermissions(false)}
+                  className="text-xs text-red-600 hover:text-red-800 font-bold uppercase tracking-wider"
+                >
+                  Deseleccionar Todos
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {formData.code === 'admin' ? (
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+              <p className="text-sm text-blue-700">
+                El rol de Administrador tiene todos los permisos habilitados por defecto y no pueden ser modificados para garantizar el acceso al sistema.
+              </p>
+            </div>
+          ) : null}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={formData.permissions.canManageUsers}
-                onChange={() => togglePermission('canManageUsers')}
-                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-              />
-              <div>
-                <div className="font-semibold text-gray-900">Gestionar Usuarios</div>
-                <div className="text-xs text-gray-600">Crear, editar y eliminar usuarios</div>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={formData.permissions.canManageProjects}
-                onChange={() => togglePermission('canManageProjects')}
-                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-              />
-              <div>
-                <div className="font-semibold text-gray-900">Gestionar Proyectos</div>
-                <div className="text-xs text-gray-600">Crear, editar y eliminar proyectos</div>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={formData.permissions.canManageClients}
-                onChange={() => togglePermission('canManageClients')}
-                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-              />
-              <div>
-                <div className="font-semibold text-gray-900">Gestionar Clientes</div>
-                <div className="text-xs text-gray-600">Crear, editar y eliminar clientes</div>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={formData.permissions.canManageDocuments}
-                onChange={() => togglePermission('canManageDocuments')}
-                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-              />
-              <div>
-                <div className="font-semibold text-gray-900">Gestionar Documentos</div>
-                <div className="text-xs text-gray-600">Subir y eliminar documentos</div>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={formData.permissions.canManageCategories}
-                onChange={() => togglePermission('canManageCategories')}
-                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-              />
-              <div>
-                <div className="font-semibold text-gray-900">Gestionar Categorías</div>
-                <div className="text-xs text-gray-600">Crear y editar categorías de documentos</div>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={formData.permissions.canManageDocumentTypes}
-                onChange={() => togglePermission('canManageDocumentTypes')}
-                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-              />
-              <div>
-                <div className="font-semibold text-gray-900">Gestionar Tipos de Documentos</div>
-                <div className="text-xs text-gray-600">Crear y editar tipos de documentos</div>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={formData.permissions.canViewAllProjects}
-                onChange={() => togglePermission('canViewAllProjects')}
-                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-              />
-              <div>
-                <div className="font-semibold text-gray-900">Ver Todos los Proyectos</div>
-                <div className="text-xs text-gray-600">Acceso a todos los proyectos del sistema</div>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={formData.permissions.canEditAllProjects}
-                onChange={() => togglePermission('canEditAllProjects')}
-                className="w-4 h-4 text-black border-gray-300 rounded focus:ring-black"
-              />
-              <div>
-                <div className="font-semibold text-gray-900">Editar Todos los Proyectos</div>
-                <div className="text-xs text-gray-600">Modificar cualquier proyecto</div>
-              </div>
-            </label>
+            {PERMISSIONS_CONFIG.map((config) => (
+              <label 
+                key={config.key} 
+                className={`flex items-center gap-3 p-4 border-2 rounded-lg transition-all ${
+                  formData.permissions[config.key] 
+                    ? 'border-indigo-600 bg-indigo-50 shadow-sm' 
+                    : 'border-gray-200 hover:bg-gray-50'
+                } ${formData.code === 'admin' ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.permissions[config.key] || false}
+                  onChange={() => togglePermission(config.key)}
+                  disabled={formData.code === 'admin'}
+                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-600 cursor-pointer"
+                />
+                <div>
+                  <div className={`font-bold ${formData.permissions[config.key] ? 'text-indigo-900' : 'text-gray-900'}`}>
+                    {config.label}
+                  </div>
+                  <div className={`text-xs ${formData.permissions[config.key] ? 'text-indigo-700' : 'text-gray-600'}`}>
+                    {config.description}
+                  </div>
+                </div>
+              </label>
+            ))}
           </div>
         </div>
 

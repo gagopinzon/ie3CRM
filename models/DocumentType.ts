@@ -25,6 +25,7 @@ const DocumentTypeSchema: Schema = new Schema<IDocumentType>(
     category: {
       type: Schema.Types.ObjectId,
       ref: 'Category',
+      required: [true, 'Por favor selecciona una categoría'],
     },
     allowedFileTypes: {
       type: [String],

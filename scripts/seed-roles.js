@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 
 const roles = [
   {
-    name: 'Administrador',
+    name: 'Mero Mero',
     code: 'admin',
-    description: 'Acceso completo al sistema. Puede gestionar usuarios, proyectos, clientes y todas las configuraciones.',
+    description: 'Acceso completo al sistema (Dueño/Director). Puede gestionar usuarios, roles, proyectos y todas las configuraciones.',
     permissions: {
       canManageUsers: true,
       canManageProjects: true,
@@ -13,22 +13,24 @@ const roles = [
       canManageDocuments: true,
       canManageCategories: true,
       canManageDocumentTypes: true,
+      canManageInventory: true,
       canViewAllProjects: true,
       canEditAllProjects: true,
     },
     isSystem: true,
   },
   {
-    name: 'Gerente de Proyectos',
-    code: 'project_manager',
-    description: 'Puede gestionar proyectos, clientes y documentos. No puede gestionar usuarios ni categorías.',
+    name: 'Administración',
+    code: 'admin_staff',
+    description: 'Personal administrativo. Puede gestionar proyectos, clientes, inventarios y documentos. No gestiona usuarios del sistema.',
     permissions: {
       canManageUsers: false,
       canManageProjects: true,
       canManageClients: true,
       canManageDocuments: true,
-      canManageCategories: false,
+      canManageCategories: true,
       canManageDocumentTypes: true,
+      canManageInventory: true,
       canViewAllProjects: true,
       canEditAllProjects: true,
     },
@@ -37,7 +39,7 @@ const roles = [
   {
     name: 'Ingeniero',
     code: 'engineer',
-    description: 'Puede ver y editar proyectos asignados, subir documentos y gestionar clientes básicos.',
+    description: 'Acceso básico. Puede ver y trabajar en sus proyectos asignados y subir documentos.',
     permissions: {
       canManageUsers: false,
       canManageProjects: true,
@@ -45,6 +47,7 @@ const roles = [
       canManageDocuments: true,
       canManageCategories: false,
       canManageDocumentTypes: false,
+      canManageInventory: false,
       canViewAllProjects: false,
       canEditAllProjects: false,
     },
@@ -53,7 +56,7 @@ const roles = [
   {
     name: 'Visualizador',
     code: 'viewer',
-    description: 'Solo puede ver proyectos y documentos. No puede realizar modificaciones.',
+    description: 'Solo lectura. Puede ver proyectos y documentos asignados.',
     permissions: {
       canManageUsers: false,
       canManageProjects: false,
@@ -61,6 +64,7 @@ const roles = [
       canManageDocuments: false,
       canManageCategories: false,
       canManageDocumentTypes: false,
+      canManageInventory: false,
       canViewAllProjects: true,
       canEditAllProjects: false,
     },
@@ -92,6 +96,7 @@ async function seedRoles() {
         canManageDocuments: { type: Boolean, default: true },
         canManageCategories: { type: Boolean, default: false },
         canManageDocumentTypes: { type: Boolean, default: true },
+        canManageInventory: { type: Boolean, default: true },
         canViewAllProjects: { type: Boolean, default: true },
         canEditAllProjects: { type: Boolean, default: false },
       },

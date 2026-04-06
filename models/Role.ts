@@ -11,6 +11,7 @@ export interface IRole extends Document {
     canManageDocuments: boolean;
     canManageCategories: boolean;
     canManageDocumentTypes: boolean;
+    canManageInventory: boolean;
     canViewAllProjects: boolean;
     canEditAllProjects: boolean;
   };
@@ -46,6 +47,7 @@ const RoleSchema: Schema = new Schema<IRole>(
       canManageDocuments: { type: Boolean, default: true },
       canManageCategories: { type: Boolean, default: false },
       canManageDocumentTypes: { type: Boolean, default: true },
+      canManageInventory: { type: Boolean, default: true },
       canViewAllProjects: { type: Boolean, default: true },
       canEditAllProjects: { type: Boolean, default: false },
     },

@@ -44,6 +44,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!category) {
+      return NextResponse.json(
+        { error: 'Por favor selecciona una categoría' },
+        { status: 400 }
+      );
+    }
+
     await connectDB();
 
     const documentType = await DocumentType.create({

@@ -66,6 +66,7 @@ export async function POST(request: Request) {
         canManageDocuments: true,
         canManageCategories: false,
         canManageDocumentTypes: true,
+        canManageInventory: true,
         canViewAllProjects: true,
         canEditAllProjects: false,
       },

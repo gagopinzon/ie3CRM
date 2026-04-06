@@ -9,6 +9,7 @@ export interface SessionPermissions {
   canManageDocuments: boolean;
   canManageCategories: boolean;
   canManageDocumentTypes: boolean;
+  canManageInventory: boolean;
   canViewAllProjects: boolean;
   canEditAllProjects: boolean;
 }

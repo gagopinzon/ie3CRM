@@ -40,6 +40,7 @@ export const authOptions: NextAuthOptions = {
           canManageDocuments: true,
           canManageCategories: true,
           canManageDocumentTypes: true,
+          canManageInventory: true,
           canViewAllProjects: true,
           canEditAllProjects: true,
         };
@@ -50,6 +51,7 @@ export const authOptions: NextAuthOptions = {
           canManageDocuments: false,
           canManageCategories: false,
           canManageDocumentTypes: false,
+          canManageInventory: false,
           canViewAllProjects: false,
           canEditAllProjects: false,
         };
@@ -64,6 +66,7 @@ export const authOptions: NextAuthOptions = {
                   canManageDocuments: !!roleObj.permissions.canManageDocuments,
                   canManageCategories: !!roleObj.permissions.canManageCategories,
                   canManageDocumentTypes: !!roleObj.permissions.canManageDocumentTypes,
+                  canManageInventory: !!roleObj.permissions.canManageInventory,
                   canViewAllProjects: !!roleObj.permissions.canViewAllProjects,
                   canEditAllProjects: !!roleObj.permissions.canEditAllProjects,
                 }

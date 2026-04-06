@@ -45,6 +45,10 @@ export default function DocumentTypeForm({ categories, initialData }: DocumentTy
     setLoading(true);
 
     try {
+      if (!formData.category) {
+        throw new Error('Por favor selecciona una categoría');
+      }
+
       const url = initialData?._id ? `/api/document-types/${initialData._id}` : '/api/document-types';
       const method = initialData?._id ? 'PUT' : 'POST';
 
@@ -120,7 +124,7 @@ export default function DocumentTypeForm({ categories, initialData }: DocumentTy
         <div>
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="category" className="block text-sm font-semibold text-gray-900">
-              Categoría
+              Categoría *
             </label>
             <Link
               href="/categories/new"
@@ -146,8 +150,9 @@ export default function DocumentTypeForm({ categories, initialData }: DocumentTy
               className="w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-black focus:ring-2 focus:ring-black sm:text-sm px-4 py-3 bg-white text-gray-900 font-medium"
               value={formData.category || ''}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              required
             >
-              <option value="">Sin categoría</option>
+              <option value="">Selecciona una categoría</option>
               {categories.map((cat) => (
                 <option key={cat._id} value={cat._id}>
                   {cat.name}

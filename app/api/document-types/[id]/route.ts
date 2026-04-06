@@ -47,6 +47,13 @@ export async function PUT(
     const body = await request.json();
     const { name, description, category, allowedFileTypes, requiresAddress } = body;
 
+    if (category === '') {
+      return NextResponse.json(
+        { error: 'Por favor selecciona una categoría' },
+        { status: 400 }
+      );
+    }
+
     await connectDB();
 
     const documentType = await DocumentType.findByIdAndUpdate(
