@@ -52,9 +52,9 @@ export default function ProjectPageContent({
   const isEdit = Boolean(initialData?._id);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
+    <div className="space-y-5 sm:space-y-6">
+      <div className="pt-1 lg:pt-0">
+        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
           {isEdit ? 'Editar Proyecto' : 'Nuevo Proyecto'}
         </h1>
         <p className="text-gray-600 mt-2">
@@ -69,7 +69,7 @@ export default function ProjectPageContent({
       />
 
       {projectId && (
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-md sm:shadow-lg p-4 sm:p-6">
           <ProjectLocationSection
             projectId={projectId}
             readOnly={false}
@@ -90,7 +90,7 @@ export default function ProjectPageContent({
         />
       )}
 
-      <div className="bg-white rounded-lg shadow-lg p-6">
+      <div id="pasos-proyecto" className="bg-white rounded-lg shadow-md sm:shadow-lg p-4 sm:p-6 scroll-mt-6">
         {projectId ? (
           <ProjectTasksKanban projectId={projectId} initialTasks={(tasks ?? []) as any} users={users} />
         ) : (

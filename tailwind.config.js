@@ -11,6 +11,14 @@ module.exports = {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
       },
+      maxWidth: {
+        /** Área útil en monitores HD/Full HD con sidebar */
+        content: 'min(100%, 112rem)',
+      },
+      screens: {
+        /** Entre móvil y tablet: listas y tablas */
+        xs: '480px',
+      },
     },
   },
   plugins: [],

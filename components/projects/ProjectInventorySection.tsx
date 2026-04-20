@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { Package, Plus, Edit, Trash2, X, Calendar, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { localCalendarDayFromStored, storedDueDateToInputValue } from '@/lib/dateOnly';
 
 interface InventoryItem {
   _id: string;
@@ -34,9 +35,9 @@ const TYPE_LABELS: Record<string, string> = {
   project_material: 'Material',
 };
 
-function formatDate(iso: string): string {
+function formatAssignmentDate(iso: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('es-MX', {
+  return localCalendarDayFromStored(iso).toLocaleDateString('es-MX', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -131,8 +132,8 @@ export default function ProjectInventorySection({
   const startEdit = (a: Assignment) => {
     setEditingId(a._id);
     setEditFormData({
-      startDate: a.startDate ? a.startDate.slice(0, 10) : '',
-      endDate: a.endDate ? a.endDate.slice(0, 10) : '',
+      startDate: a.startDate ? storedDueDateToInputValue(a.startDate) : '',
+      endDate: a.endDate ? storedDueDateToInputValue(a.endDate) : '',
       quantity: a.quantity,
     });
     setError('');
@@ -230,7 +231,9 @@ export default function ProjectInventorySection({
   };
 
   const sortedAssignments = [...assignments].sort(
-    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    (a, b) =>
+      localCalendarDayFromStored(a.startDate).getTime() -
+      localCalendarDayFromStored(b.startDate).getTime(),
   );
 
   return (
@@ -479,11 +482,11 @@ export default function ProjectInventorySection({
                   </td>
                   <td className="py-3 px-2 text-gray-700 flex items-center gap-1">
                     <Calendar size={14} className="text-gray-400" />
-                    {formatDate(a.startDate)}
+                    {formatAssignmentDate(a.startDate)}
                   </td>
                   <td className="py-3 px-2 text-gray-700 flex items-center gap-1">
                     <Calendar size={14} className="text-gray-400" />
-                    {formatDate(a.endDate)}
+                    {formatAssignmentDate(a.endDate)}
                   </td>
                   {!readOnly && (
                     <td className="py-3 px-2 text-right">

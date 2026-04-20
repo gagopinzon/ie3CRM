@@ -2,6 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { Plus, Edit, Trash2, FileText, Clock, User } from 'lucide-react';
+import { storedDueDateToInputValue } from '@/lib/dateOnly';
 
 interface Note {
   _id: string;
@@ -150,7 +151,7 @@ export default function ProjectNotes({ projectId, initialNotes = [], layout = 's
     setNoteType(note.type);
     setAddToCalendar(!!(note.eventDate));
     setFormEventDate(
-      note.eventDate ? new Date(note.eventDate).toISOString().slice(0, 10) : '',
+      note.eventDate ? storedDueDateToInputValue(note.eventDate) : '',
     );
     setShowForm(true);
   };

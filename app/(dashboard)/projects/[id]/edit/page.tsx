@@ -72,6 +72,27 @@ export default async function EditProjectPage({ params }: { params: { id: string
     redirect('/projects');
   }
 
+  const rawClient = data.project.client as
+    | { _id?: string; companyName?: string }
+    | string
+    | undefined
+    | null;
+  let clientDisplayName = '';
+  if (rawClient && typeof rawClient === 'object' && rawClient.companyName) {
+    clientDisplayName = rawClient.companyName;
+  } else {
+    const clientId =
+      typeof rawClient === 'object' && rawClient?._id
+        ? String(rawClient._id)
+        : rawClient
+          ? String(rawClient)
+          : '';
+    const found = data.clients.find(
+      (c: { _id: string }) => String(c._id) === clientId
+    );
+    clientDisplayName = found?.companyName ?? clientId;
+  }
+
   return (
     <DashboardLayout>
       <ProjectPageContent
@@ -81,7 +102,7 @@ export default async function EditProjectPage({ params }: { params: { id: string
           _id: data.project._id,
           name: data.project.name,
           description: data.project.description,
-          client: typeof data.project.client === 'object' ? data.project.client._id : data.project.client,
+          client: clientDisplayName,
           documentTypes: data.project.documentTypes.map((dt: { _id: string }) => dt._id),
           kanbanColumn: data.project.kanbanColumn,
           progress: data.project.progress || 0,

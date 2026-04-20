@@ -5,6 +5,7 @@ import connectDB from '@/lib/mongodb';
 import Project from '@/models/Project';
 import ProjectInventoryAssignment from '@/models/ProjectInventoryAssignment';
 import InventoryItem from '@/models/InventoryItem';
+import { commitDateOnlyToStorage } from '@/lib/dateOnly';
 
 export async function GET(
   request: Request,
@@ -99,8 +100,8 @@ export async function POST(
     const assignment = await ProjectInventoryAssignment.create({
       projectId: params.id,
       inventoryItemId,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: commitDateOnlyToStorage(String(startDate))!,
+      endDate: commitDateOnlyToStorage(String(endDate))!,
       quantity: Number(quantity),
       notes: notes?.trim(),
     });

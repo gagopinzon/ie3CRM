@@ -54,8 +54,14 @@ export default function ProjectForm({ documentTypes, clients, initialData }: Pro
         throw new Error(data.error || 'Error al guardar el proyecto');
       }
 
-      router.push('/projects');
-      router.refresh();
+      if (initialData?._id) {
+        router.refresh();
+        const el = document.getElementById('pasos-proyecto');
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        router.push('/projects');
+        router.refresh();
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -247,7 +253,9 @@ export default function ProjectForm({ documentTypes, clients, initialData }: Pro
                         className="w-5 h-5 rounded border-2 border-gray-400 text-black focus:ring-2 focus:ring-black focus:ring-offset-2 cursor-pointer"
                         style={{ accentColor: isChecked ? '#ffffff' : '#000000' }}
                       />
-                      <span className={`text-sm font-medium flex-1 ${isChecked ? 'text-white' : 'text-gray-900'}`}>
+                      <span
+                        className={`text-sm font-medium flex-1 uppercase tracking-wide ${isChecked ? 'text-white' : 'text-gray-900'}`}
+                      >
                         {docType.name}
                       </span>
                       {docType.description && (

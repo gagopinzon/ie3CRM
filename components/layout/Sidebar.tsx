@@ -18,18 +18,34 @@ import {
   Shield,
   Package,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
+import type { SessionPermissions } from '@/lib/permissions';
+import { hasPermission } from '@/lib/permissions';
+import type { LucideIcon } from 'lucide-react';
 
-const navigation = [
+type NavItem = {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  /** Si no se define, el ítem se muestra a cualquier usuario autenticado */
+  permission?: keyof SessionPermissions;
+};
+
+const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Proyectos', href: '/projects', icon: FolderKanban },
-  { name: 'Clientes', href: '/clients', icon: Building2 },
-  { name: 'Inventarios', href: '/inventories', icon: Package },
-  { name: 'Tipos de Documentos', href: '/document-types', icon: FileType },
-  { name: 'Categorías', href: '/categories', icon: FileText },
+  { name: 'Clientes', href: '/clients', icon: Building2, permission: 'canManageClients' },
+  { name: 'Inventarios', href: '/inventories', icon: Package, permission: 'canManageInventory' },
+  {
+    name: 'Tipos de Documentos',
+    href: '/document-types',
+    icon: FileType,
+    permission: 'canManageDocumentTypes',
+  },
+  { name: 'Categorías', href: '/categories', icon: FileText, permission: 'canManageCategories' },
   { name: 'Calendario', href: '/calendar', icon: Calendar },
-  { name: 'Usuarios', href: '/users', icon: Users },
+  { name: 'Usuarios', href: '/users', icon: Users, permission: 'canManageUsers' },
 ];
 
 const adminNavigation = [
@@ -40,17 +56,28 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { data: session } = useSession();
-  const canManageUsers = (session?.user as any)?.permissions?.canManageUsers;
+  const permissions = (session?.user as { permissions?: SessionPermissions } | undefined)?.permissions;
+  const canManageUsers = hasPermission(permissions, 'canManageUsers');
+
+  const visibleNavigation = useMemo(
+    () =>
+      navigation.filter(
+        (item) => !item.permission || hasPermission(permissions, item.permission)
+      ),
+    [permissions]
+  );
 
   return (
     <>
       {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      <div className="lg:hidden fixed top-[max(0.75rem,env(safe-area-inset-top))] left-[max(0.75rem,env(safe-area-inset-left))] z-50">
         <button
+          type="button"
+          aria-label={isOpen ? 'Cerrar menú' : 'Abrir menú'}
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          className="rounded-xl border border-gray-200/80 bg-white/95 p-2.5 text-gray-800 shadow-md backdrop-blur-sm hover:bg-white active:scale-[0.98] transition-[transform,box-shadow,background-color]"
         >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+          {isOpen ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
         </button>
       </div>
 
@@ -74,7 +101,7 @@ export default function Sidebar() {
           </div>
 
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            {navigation.map((item) => {
+            {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
               return (
                 <Link

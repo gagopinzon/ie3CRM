@@ -3,6 +3,7 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { CalendarEvent, Project } from '@/shared/types';
+import { toDatetimeLocalValue } from '@/lib/dateOnly';
 
 interface EventModalProps {
   event: CalendarEvent | null;
@@ -28,14 +29,12 @@ export default function EventModal({
     description: event?.description || '',
     projectId: event?.projectId || '',
     startDate: event
-      ? new Date(event.startDate).toISOString().slice(0, 16)
+      ? toDatetimeLocalValue(event.startDate)
       : initialDate
-      ? new Date(initialDate).toISOString().slice(0, 16)
+      ? toDatetimeLocalValue(initialDate)
       : '',
-    endDate: event?.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '',
-    reminderDate: event?.reminderDate
-      ? new Date(event.reminderDate).toISOString().slice(0, 16)
-      : '',
+    endDate: event?.endDate ? toDatetimeLocalValue(event.endDate) : '',
+    reminderDate: event?.reminderDate ? toDatetimeLocalValue(event.reminderDate) : '',
     type: event?.type || 'reminder',
   });
 

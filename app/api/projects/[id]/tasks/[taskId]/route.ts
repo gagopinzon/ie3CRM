@@ -6,6 +6,7 @@ import Project from '@/models/Project';
 import ProjectTask from '@/models/ProjectTask';
 import { recalculateProjectProgress } from '@/lib/projects';
 import { logActivity } from '@/lib/activityLog';
+import { commitDateOnlyToStorage } from '@/lib/dateOnly';
 
 export async function PUT(
   request: Request,
@@ -36,7 +37,11 @@ export async function PUT(
     if (assignedTo !== undefined) {
       updateData.assignedTo = Array.isArray(assignedTo) ? assignedTo : assignedTo ? [assignedTo] : [];
     }
-    if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
+    if (dueDate !== undefined) {
+      updateData.dueDate = commitDateOnlyToStorage(
+        dueDate === null || dueDate === '' ? '' : String(dueDate),
+      );
+    }
 
     const task = await ProjectTask.findOneAndUpdate(
       { _id: params.taskId, projectId: params.id },

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import ProjectNote from '@/models/ProjectNote';
+import { commitDateOnlyToStorage } from '@/lib/dateOnly';
 
 export async function GET(
   request: Request,
@@ -57,8 +58,8 @@ export async function POST(
       createdBy: session.user?.id,
     };
     if (eventDate != null && eventDate !== '') {
-      const d = new Date(eventDate);
-      if (!Number.isNaN(d.getTime())) noteData.eventDate = d;
+      const d = commitDateOnlyToStorage(String(eventDate));
+      if (d) noteData.eventDate = d;
     } else {
       noteData.eventDate = undefined;
     }

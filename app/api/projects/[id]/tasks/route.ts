@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import ProjectTask from '@/models/ProjectTask';
 import { recalculateProjectProgress } from '@/lib/projects';
+import { commitDateOnlyToStorage } from '@/lib/dateOnly';
 
 export async function GET(
   request: Request,
@@ -69,7 +70,7 @@ export async function POST(
       status: status || 'todo',
       order: nextOrder,
       ...(assignedIds.length >= 0 && { assignedTo: assignedIds }),
-      ...(dueDate && { dueDate: new Date(dueDate) }),
+      ...(dueDate && { dueDate: commitDateOnlyToStorage(String(dueDate)) }),
       createdBy: session.user?.id,
     });
 

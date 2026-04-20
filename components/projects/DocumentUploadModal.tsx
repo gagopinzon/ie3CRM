@@ -103,14 +103,14 @@ export default function DocumentUploadModal({
               <select
                 id="documentType"
                 required
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border uppercase tracking-wide"
                 value={documentTypeId}
                 onChange={(e) => setDocumentTypeId(e.target.value)}
               >
                 <option value="">Selecciona un tipo</option>
                 {documentTypes.map((dt) => (
                   <option key={dt._id} value={dt._id}>
-                    {dt.name}
+                    {dt.name.toUpperCase()}
                   </option>
                 ))}
               </select>

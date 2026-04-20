@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { localCalendarDayFromStored } from '@/lib/dateOnly';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'moment/locale/es';
@@ -101,7 +102,7 @@ export default function ProjectActivitiesCalendar({ tasks, notes = [] }: Project
 
   const calendarEvents = useMemo(() => {
     const taskEvents = tasksWithDue.map((t) => {
-      const d = new Date(t.dueDate as string);
+      const d = localCalendarDayFromStored(t.dueDate as string | Date);
       d.setHours(9, 0, 0, 0);
       const end = new Date(d);
       end.setHours(17, 0, 0, 0);
@@ -114,7 +115,7 @@ export default function ProjectActivitiesCalendar({ tasks, notes = [] }: Project
       };
     });
     const noteEvents = notesWithDate.map((n) => {
-      const d = new Date(n.eventDate as string);
+      const d = localCalendarDayFromStored(n.eventDate as string | Date);
       d.setHours(9, 0, 0, 0);
       const end = new Date(d);
       end.setHours(17, 0, 0, 0);

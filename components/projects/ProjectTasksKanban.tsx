@@ -7,6 +7,7 @@ import type { RefCallback } from 'react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { getStatusHexColor, getTaskCardPalette, KANBAN_COLUMN_THEME } from '@/lib/ui/workflowTheme';
+import { localCalendarDayFromStored, storedDueDateToInputValue } from '@/lib/dateOnly';
 
 type AssignedRef = string | { _id: string; name: string };
 
@@ -245,11 +246,7 @@ function TaskCard({
                 </div>
                 <input
                   type="date"
-                  value={
-                    task.dueDate
-                      ? new Date(task.dueDate).toISOString().slice(0, 10)
-                      : ''
-                  }
+                  value={task.dueDate ? storedDueDateToInputValue(task.dueDate) : ''}
                   onChange={(e) =>
                     onChangeDueDate(task._id, e.target.value || null)
                   }
@@ -271,7 +268,12 @@ function TaskCard({
               {task.dueDate && (
                 <p className="text-sm text-gray-500 flex items-center gap-2">
                   <Calendar size={14} className="text-gray-400" />
-                  Compromiso: {new Date(task.dueDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  Compromiso:{' '}
+                  {localCalendarDayFromStored(task.dueDate).toLocaleDateString('es-ES', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
                 </p>
               )}
             </div>
@@ -384,6 +386,10 @@ export default function ProjectTasksKanban({ projectId, initialTasks = [], readO
   }, []);
 
   useEffect(() => {
+    setTasks(initialTasks ?? []);
+  }, [initialTasks]);
+
+  useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 4000);
     return () => clearTimeout(t);
@@ -436,12 +442,7 @@ export default function ProjectTasksKanban({ projectId, initialTasks = [], readO
     const task = tasks.find((t) => t._id === taskId);
     if (!task) return;
 
-    const prev =
-      task.dueDate && typeof task.dueDate === 'string'
-        ? task.dueDate.slice(0, 10)
-        : task.dueDate
-        ? new Date(task.dueDate).toISOString().slice(0, 10)
-        : '';
+    const prev = task.dueDate ? storedDueDateToInputValue(task.dueDate) : '';
     if (prev === (date || '')) return;
 
     setTasks(
@@ -596,7 +597,7 @@ export default function ProjectTasksKanban({ projectId, initialTasks = [], readO
 
   const startEdit = (task: Task) => {
     setEditingTask(task);
-    const due = task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 10) : '';
+    const due = task.dueDate ? storedDueDateToInputValue(task.dueDate) : '';
     setFormData({
       title: task.title,
       description: task.description || '',
@@ -628,8 +629,8 @@ export default function ProjectTasksKanban({ projectId, initialTasks = [], readO
     <DndProvider backend={HTML5Backend}>
       <div className="space-y-4">
         {!readOnly && (
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h3 className="text-lg font-bold text-gray-900">Pasos del Proyecto</h3>
               <p className="text-sm text-gray-500 mt-0.5">Define los pasos necesarios para completar el proyecto</p>
             </div>
@@ -639,10 +640,10 @@ export default function ProjectTasksKanban({ projectId, initialTasks = [], readO
                 setEditingTask(null);
                 setFormData({ title: '', description: '', status: 'todo', assignedTo: [], dueDate: '' });
               }}
-              className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)] hover:bg-black transition-all"
+              className="inline-flex w-full shrink-0 items-center justify-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-[0_4px_14px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)] hover:bg-black transition-all sm:w-auto"
             >
               <Plus size={18} />
-              Agregar Paso
+              Agregar Tarea
             </button>
           </div>
         )}
@@ -763,14 +764,14 @@ export default function ProjectTasksKanban({ projectId, initialTasks = [], readO
           </div>
         )}
 
-        {/* Layout responsivo del tablero: scroll horizontal en móvil, grid en escritorio */}
-        <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-4 md:overflow-visible">
+        {/* Móvil/tablet: scroll horizontal; desde lg 2 columnas; desde xl 4 (mejor en HD 1366 con sidebar) */}
+        <div className="flex gap-4 overflow-x-auto overflow-y-visible pb-2 scroll-smooth snap-x snap-mandatory [-webkit-overflow-scrolling:touch] lg:snap-none lg:grid lg:grid-cols-2 lg:overflow-visible xl:grid-cols-4">
           {columns.map((column) => {
             const columnTasks = getTasksByStatus(column.id as Task['status']);
             return (
               <div
                 key={column.id}
-                className="w-[260px] sm:w-[280px] md:w-auto md:min-w-0 flex-shrink-0 md:flex-shrink"
+                className="w-[min(85vw,300px)] shrink-0 snap-center sm:w-[280px] lg:w-auto lg:min-w-0 lg:shrink"
               >
                 <Column
                   column={column}
@@ -791,7 +792,7 @@ export default function ProjectTasksKanban({ projectId, initialTasks = [], readO
       {toast && (
         <div
           role="status"
-          className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-lg border text-sm font-semibold ${
+          className={`fixed z-50 px-4 py-3 rounded-2xl shadow-lg border text-sm font-semibold left-4 right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-md ${
             toast.type === 'success'
               ? 'bg-emerald-500 border-emerald-600 text-white'
               : 'bg-red-500 border-red-600 text-white'

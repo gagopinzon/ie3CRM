@@ -14,6 +14,7 @@ import {
   getStatusRowClasses,
   getTaskCardPalette,
 } from '@/lib/ui/workflowTheme';
+import { localCalendarDayFromStored } from '@/lib/dateOnly';
 
 moment.locale('es');
 const localizer = momentLocalizer(moment);
@@ -77,8 +78,7 @@ function isPastDay(date: Date, todayStart: number): boolean {
 }
 
 function getOverdueDaysLabel(dueDate: string, todayStart: number): string {
-  const due = new Date(dueDate);
-  due.setHours(0, 0, 0, 0);
+  const due = localCalendarDayFromStored(dueDate);
   const diffMs = todayStart - due.getTime();
   const days = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
   return days === 1 ? 'Vencido hace 1 día' : `Vencido hace ${days} días`;
@@ -184,22 +184,29 @@ export default function DashboardDeliveriesSection({ tasksWithDue, noteEvents = 
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     for (const t of tasksWithDue) {
-      const due = new Date(t.dueDate);
-      due.setHours(0, 0, 0, 0);
+      const due = localCalendarDayFromStored(t.dueDate);
       if (due.getTime() < now.getTime()) {
         if (t.status !== 'done') over.push(t);
       } else {
         up.push(t);
       }
     }
-    over.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
-    up.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    over.sort(
+      (a, b) =>
+        localCalendarDayFromStored(a.dueDate).getTime() -
+        localCalendarDayFromStored(b.dueDate).getTime(),
+    );
+    up.sort(
+      (a, b) =>
+        localCalendarDayFromStored(a.dueDate).getTime() -
+        localCalendarDayFromStored(b.dueDate).getTime(),
+    );
     return { overdue: over, upcoming: up };
   }, [tasksWithDue]);
 
   const calendarEvents = useMemo(() => {
     const taskItems = tasksWithDue.map((t) => {
-      const d = new Date(t.dueDate);
+      const d = localCalendarDayFromStored(t.dueDate);
       d.setHours(9, 0, 0, 0);
       const end = new Date(d);
       end.setHours(17, 0, 0, 0);
@@ -212,7 +219,7 @@ export default function DashboardDeliveriesSection({ tasksWithDue, noteEvents = 
       };
     });
     const noteItems = noteEvents.map((n) => {
-      const d = new Date(n.eventDate);
+      const d = localCalendarDayFromStored(n.eventDate);
       d.setHours(9, 0, 0, 0);
       const end = new Date(d);
       end.setHours(17, 0, 0, 0);
@@ -617,9 +624,7 @@ export default function DashboardDeliveriesSection({ tasksWithDue, noteEvents = 
             ) : (
               <ul className="space-y-2">
                 {upcoming.map((t) => {
-                  const due = new Date(t.dueDate);
-                  const dueStart = new Date(due);
-                  dueStart.setHours(0, 0, 0, 0);
+                  const dueStart = localCalendarDayFromStored(t.dueDate);
                   const isToday = dueStart.getTime() === todayStart;
                   const palette = getTaskCardPalette(t.status);
                   const upcomingColor = getOverdueTypeColor(t.status);
@@ -636,7 +641,7 @@ export default function DashboardDeliveriesSection({ tasksWithDue, noteEvents = 
                             isToday ? 'ring-2 ring-amber-300' : ''
                           }`}
                         >
-                          {due.getDate()}
+                          {dueStart.getDate()}
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className={`flex items-center gap-2 mb-1 rounded-lg px-2 py-1 ${getStatusRowClasses(t.status)}`}>
@@ -654,7 +659,7 @@ export default function DashboardDeliveriesSection({ tasksWithDue, noteEvents = 
                             <span className={upcomingColor}>
                               {isToday
                                 ? 'Hoy'
-                                : new Date(t.dueDate).toLocaleDateString('es-ES', {
+                                : localCalendarDayFromStored(t.dueDate).toLocaleDateString('es-ES', {
                                     weekday: 'short',
                                     day: 'numeric',
                                     month: 'short',

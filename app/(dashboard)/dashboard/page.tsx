@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { Edit, FileUp, Activity } from 'lucide-react';
 import { getStatusLabel } from '@/lib/ui/workflowTheme';
 import DashboardDeliveriesSection, { type TaskWithDue, type NoteEvent } from '@/components/dashboard/DashboardDeliveriesSection';
+import { localCalendarDayFromStored } from '@/lib/dateOnly';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,8 +109,7 @@ async function getDashboardData(session: any) {
     const maxDue = maxDueMap[id] ? new Date(maxDueMap[id]) : null;
     let daysRemaining: number | null = null;
     if (maxDue) {
-      const dueStart = new Date(maxDue);
-      dueStart.setHours(0, 0, 0, 0);
+      const dueStart = localCalendarDayFromStored(maxDue);
       daysRemaining = Math.round((dueStart.getTime() - todayForDue.getTime()) / oneDayMs);
     }
     return {
@@ -188,10 +188,14 @@ async function getDashboardData(session: any) {
   let tasksOverdue = 0;
   for (const t of tasksWithDueSerialized) {
     if (t.status === 'done') continue;
-    const due = new Date(t.dueDate!);
-    if (due < todayStart) tasksOverdue += 1;
-    else if (due >= todayStart && due < todayEnd) tasksDueToday += 1;
-    if (due >= todayStart && due <= endOfWeek) tasksDueThisWeek += 1;
+    const dueDay = localCalendarDayFromStored(t.dueDate!);
+    if (dueDay.getTime() < todayStart.getTime()) tasksOverdue += 1;
+    else if (dueDay.getTime() >= todayStart.getTime() && dueDay.getTime() < todayEnd.getTime()) {
+      tasksDueToday += 1;
+    }
+    if (dueDay.getTime() >= startOfWeek.getTime() && dueDay.getTime() <= endOfWeek.getTime()) {
+      tasksDueThisWeek += 1;
+    }
   }
 
   let recentActivity: Array<{

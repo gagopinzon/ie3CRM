@@ -42,9 +42,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-black">
+    <div className="min-h-[100dvh] min-h-screen flex flex-col lg:flex-row bg-black">
       {/* Panel izquierdo con diseño tecnológico */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 min-h-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
         {/* Patrón de grid tecnológico */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -99,20 +99,20 @@ export default function LoginPage() {
       </div>
 
       {/* Panel derecho con formulario */}
-      <div className="flex-1 flex items-center justify-center bg-white p-8">
+      <div className="flex-1 flex items-center justify-center bg-white px-4 py-10 sm:px-8 sm:py-12 lg:px-12 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
         <div className="w-full max-w-md">
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex flex-col items-center text-center gap-4 xs:flex-row xs:text-left xs:items-center xs:gap-3 mb-4">
               <NextImage
                 src="/logo.svg"
                 alt="IE3 Logo"
                 width={48}
                 height={48}
-                className="w-12 h-12"
+                className="w-12 h-12 shrink-0"
               />
-              <div>
-                <h2 className="text-3xl font-bold text-black tracking-tight">INICIAR SESIÓN</h2>
-                <p className="text-gray-600 text-sm">Ingeniería Especializada en Eficiencia Energética</p>
+              <div className="min-w-0">
+                <h2 className="text-2xl sm:text-3xl font-bold text-black tracking-tight">INICIAR SESIÓN</h2>
+                <p className="text-gray-600 text-sm mt-1">Ingeniería Especializada en Eficiencia Energética</p>
               </div>
             </div>
           </div>
@@ -167,7 +167,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <label className="flex items-center">
                 <input
                   type="checkbox"

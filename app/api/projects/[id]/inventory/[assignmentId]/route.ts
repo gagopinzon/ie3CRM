@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import connectDB from '@/lib/mongodb';
 import ProjectInventoryAssignment from '@/models/ProjectInventoryAssignment';
+import { commitDateOnlyToStorage } from '@/lib/dateOnly';
 
 export async function PUT(
   request: Request,
@@ -27,8 +28,8 @@ export async function PUT(
     const assignment = await ProjectInventoryAssignment.findOneAndUpdate(
       { _id: params.assignmentId, projectId: params.id },
       {
-        ...(startDate && { startDate: new Date(startDate) }),
-        ...(endDate && { endDate: new Date(endDate) }),
+        ...(startDate && { startDate: commitDateOnlyToStorage(String(startDate))! }),
+        ...(endDate && { endDate: commitDateOnlyToStorage(String(endDate))! }),
         ...(quantity != null && { quantity: Number(quantity) }),
         ...(notes !== undefined && { notes: notes?.trim() }),
       },

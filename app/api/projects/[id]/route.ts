@@ -92,6 +92,21 @@ export async function PUT(
       return NextResponse.json({ error: 'Proyecto no encontrado' }, { status: 404 });
     }
 
+    // Quitar pasos del tablero ligados a tipos de documento que ya no están en el proyecto
+    if (documentTypes !== undefined && Array.isArray(documentTypes)) {
+      if (documentTypes.length === 0) {
+        await ProjectTask.deleteMany({
+          projectId: params.id,
+          documentTypeId: { $exists: true, $ne: null },
+        });
+      } else {
+        await ProjectTask.deleteMany({
+          projectId: params.id,
+          documentTypeId: { $exists: true, $ne: null, $nin: documentTypes },
+        });
+      }
+    }
+
     if (kanbanColumn && previousKanban && previousKanban !== kanbanColumn) {
       const userId = (session.user as any).id;
       const userName = (session.user as any).name ?? 'Usuario';
